@@ -2,9 +2,9 @@
 
 namespace box
 {
-	class IGame
+	class IScene
 	{
 	public:
-		virtual ~IGame() = default;
+		virtual ~IScene() = default;
 	};
 }

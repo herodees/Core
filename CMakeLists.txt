@@ -47,6 +47,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE})
+target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE}/deps")
 target_include_directories(${PROJECT_NAME} PRIVATE ${imgui_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE "${imgui_SOURCE_DIR}/backendse")
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
