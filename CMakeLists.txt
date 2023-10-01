@@ -30,7 +30,8 @@ FetchContent_Populate(imgui
 
 # Adding our source files
 file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/sources/*.cpp") # Define PROJECT_SOURCES as a list of all source files
-set(PROJECT_INCLUDE "${CMAKE_CURRENT_LIST_DIR}/sources/") # Define PROJECT_INCLUDE to be the path to the include directory of the project
+set(PROJECT_SOURCE "${CMAKE_CURRENT_LIST_DIR}/sources/") # Define PROJECT_INCLUDE to be the path to the include directory of the project
+set(PROJECT_INCLUDE "${CMAKE_CURRENT_LIST_DIR}/include/")
 
 # Declaring our executable
 add_executable(${PROJECT_NAME})
@@ -45,6 +46,7 @@ target_sources(${PROJECT_NAME} PRIVATE
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
+target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${imgui_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE "${imgui_SOURCE_DIR}/backendse")
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
