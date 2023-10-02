@@ -35,29 +35,29 @@ namespace box
 
     int32_t Game::run()
 	{
-        InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
-        SetTargetFPS(60);
+        ray::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
+        ray::SetTargetFPS(60);
 
-        Texture2D texture = LoadTexture(ASSETS_PATH"test.png"); // Check README.md for how this works
+        ray::Texture2D texture = ray::LoadTexture(ASSETS_PATH"test.png"); // Check README.md for how this works
 
-        while (!WindowShouldClose())
+        while (!ray::WindowShouldClose())
         {
-            BeginDrawing();
+            ray::BeginDrawing();
 
-            ClearBackground(RAYWHITE);
+            ray::ClearBackground(ray::RAYWHITE);
 
             const int texture_x = SCREEN_WIDTH / 2 - texture.width / 2;
             const int texture_y = SCREEN_HEIGHT / 2 - texture.height / 2;
-            DrawTexture(texture, texture_x, texture_y, WHITE);
+            DrawTexture(texture, texture_x, texture_y, ray::WHITE);
 
             const char* text = "OMG! IT WORKS!";
-            const Vector2 text_size = MeasureTextEx(GetFontDefault(), text, 20, 1);
-            DrawText(text, SCREEN_WIDTH / 2 - text_size.x / 2, texture_y + texture.height + text_size.y + 10, 20, BLACK);
+            const ray::Vector2 text_size = ray::MeasureTextEx(ray::GetFontDefault(), text, 20, 1);
+            ray::DrawText(text, SCREEN_WIDTH / 2 - text_size.x / 2, texture_y + texture.height + text_size.y + 10, 20, ray::BLACK);
 
-            EndDrawing();
+            ray::EndDrawing();
         }
 
-        CloseWindow();
+        ray::CloseWindow();
 
         return 0;
 	}
