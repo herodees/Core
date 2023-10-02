@@ -23,6 +23,8 @@ namespace box
 	{
 		clear();
 		_data = ray::LoadTexture(path);
+		_size.x = _data.width;
+		_size.y = _data.height;
 		return !empty();
 	}
 
@@ -30,6 +32,8 @@ namespace box
 	{
 		clear();
 		_data = ray::LoadTextureFromImage((const ray::Image&)image.data());
+		_size.x = _data.width;
+		_size.y = _data.height;
 		return !empty();
 	}
 
@@ -39,22 +43,13 @@ namespace box
 		{
 			ray::UnloadTexture(_data);
 			_data = {};
+			_size = {};
 		}
 	}
 
 	bool Texture::empty() const
 	{
 		return _data.id == 0;
-	}
-
-	int32_t Texture::width() const
-	{
-		return _data.width;
-	}
-
-	int32_t Texture::height() const
-	{
-		return _data.height;
 	}
 
 	void Texture::setFilter(int32_t filter)
@@ -89,6 +84,8 @@ namespace box
 	{
 		clear();
 		_data = ray::LoadImage(path);
+		_size.x = _data.width;
+		_size.y = _data.height;
 		return !empty();
 	}
 
@@ -98,6 +95,7 @@ namespace box
 		{
 			ray::UnloadImage(_data);
 			_data = {};
+			_size = {};
 		}
 	}
 
@@ -109,16 +107,6 @@ namespace box
 	const NativeData& Image::data() const
 	{
 		return (const NativeData&)_data;
-	}
-
-	int32_t Image::width() const
-	{
-		return _data.width;
-	}
-
-	int32_t Image::height() const
-	{
-		return _data.height;
 	}
 
 	RenderTexture::RenderTexture()
@@ -133,6 +121,8 @@ namespace box
 	{
 		clear();
 		_data = ray::LoadRenderTexture(w, h);
+		_size.x = w;
+		_size.y = h;
 		return !empty();
 	}
 
@@ -148,16 +138,6 @@ namespace box
 	bool RenderTexture::empty() const
 	{
 		return _data.id == 0;
-	}
-
-	int32_t RenderTexture::width() const
-	{
-		return _data.texture.width;
-	}
-
-	int32_t RenderTexture::height() const
-	{
-		return _data.texture.height;
 	}
 
 	const NativeData& RenderTexture::data() const

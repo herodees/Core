@@ -26,9 +26,6 @@ namespace box
 		void clear() override;
 		bool empty() const override;
 
-		int32_t width() const override;
-		int32_t height() const override;
-
 		const NativeData& data() const override;
 
 	protected:
@@ -48,9 +45,6 @@ namespace box
 		bool load(const IImage& image) override;
 		void clear() override;
 		bool empty() const override;
-
-		int32_t width() const override;
-		int32_t height() const override;
 
 		void setFilter(int32_t filter) override;
 		void setTextureWrap(int32_t wrap) override;
@@ -74,9 +68,6 @@ namespace box
 		bool create(int32_t w, int32_t h) override;
 		void clear() override;
 		bool empty() const override;
-
-		int32_t width() const override;
-		int32_t height() const override;
 
 		const NativeData& data() const override;
 
