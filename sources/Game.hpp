@@ -13,6 +13,8 @@ namespace box
 		Game();
 		~Game() override;
 
+		void init();
+
 		IRenderer& renderer() override final;
 		IAssetProvider& asset() override final;
 		IScene& scene() override final;

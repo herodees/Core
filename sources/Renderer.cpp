@@ -2,6 +2,26 @@
 
 namespace box
 {
+	template <typename T>
+	uint32_t create_index(T& data, uint32_t& free_id)
+	{
+		if (free_id < data.size())
+		{
+			const uint32_t ret = free_id;
+			free_id = (uint32_t&)data[free_id];
+			return ret;
+		}
+		data.emplace_back();
+		return uint32_t(data.size() - 1);
+	}
+
+	template <typename T>
+	void free_index(T& data, uint32_t id, uint32_t& free_id)
+	{
+		(uint32_t&)(data[id]) = free_id;
+		free_id = id;
+	}
+
 	Renderer::Renderer()
 	{
 	}
@@ -10,138 +30,133 @@ namespace box
 	{
 	}
 
-	Texture::Texture()
+	void Renderer::begin_drawing()
 	{
+		ray::BeginDrawing();
 	}
 
-	Texture::~Texture()
+	void Renderer::end_drawing()
 	{
-		clear();
+		ray::EndDrawing();
 	}
 
-	bool Texture::load(const char* path)
+	void Renderer::begin_texture_drawing(uint32_t id)
 	{
-		clear();
-		_data = ray::LoadTexture(path);
-		_size.x = _data.width;
-		_size.y = _data.height;
-		return !empty();
+		ray::BeginTextureMode(_render_textures[id]);
 	}
 
-	bool Texture::load(const IImage& image)
+	void Renderer::end_texture_drawing()
 	{
-		clear();
-		_data = ray::LoadTextureFromImage((const ray::Image&)image.data());
-		_size.x = _data.width;
-		_size.y = _data.height;
-		return !empty();
+		ray::EndTextureMode();
 	}
 
-	void Texture::clear()
+	void Renderer::begin_2d_mode(Camera camera)
 	{
-		if (!empty())
-		{
-			ray::UnloadTexture(_data);
-			_data = {};
-			_size = {};
-		}
+		ray::BeginMode2D((ray::Camera2D&)camera);
 	}
 
-	bool Texture::empty() const
+	void Renderer::end_2d_mode()
 	{
-		return _data.id == 0;
+		ray::EndMode2D();
 	}
 
-	void Texture::setFilter(int32_t filter)
+	void Renderer::begin_shader_mode(uint32_t id)
 	{
-		ray::SetTextureFilter(_data, filter);
+		ray::BeginShaderMode(_shaders[id]);
 	}
 
-	void Texture::setTextureWrap(int32_t wrap)
+	void Renderer::end_shader_mode()
 	{
-		ray::SetTextureWrap(_data, wrap);
+		ray::EndShaderMode();
 	}
 
-	void Texture::genMipmaps()
+	void Renderer::begin_blend_mode(uint32_t mode)
 	{
-		ray::GenTextureMipmaps(&_data);
+		ray::BeginBlendMode(mode);
 	}
 
-	const NativeData& Texture::data() const
+	void Renderer::end_blend_mode()
 	{
-		return (const NativeData&)_data;
+		ray::EndBlendMode();
 	}
 
-	Image::Image()
+	void Renderer::begin_scissor_mode(const Recti& rc)
 	{
+		ray::BeginScissorMode(rc.min.x, rc.min.y, rc.max.x - rc.min.x, rc.max.y - rc.min.y);
 	}
 
-	Image::~Image()
+	void Renderer::end_scissor_mode()
 	{
+		ray::EndScissorMode();
 	}
 
-	bool Image::load(const char* path)
+	void Renderer::clear_background(Color c)
 	{
-		clear();
-		_data = ray::LoadImage(path);
-		_size.x = _data.width;
-		_size.y = _data.height;
-		return !empty();
+		ray::ClearBackground((ray::Color&)c);
+
+		ray::Camera2D cam;
 	}
 
-	void Image::clear()
+	uint32_t Renderer::load_texture(const char* path)
 	{
-		if (!empty())
-		{
-			ray::UnloadImage(_data);
-			_data = {};
-			_size = {};
-		}
+		auto ret = create_index(_textures, _free_texture);
+		_textures[ret] = ray::LoadTexture(path);
+		return ret;
 	}
 
-	bool Image::empty() const
+	void Renderer::unload_texture(uint32_t id)
 	{
-		return _data.data == nullptr;
+		ray::UnloadTexture(_textures[id]);
+		free_index(_textures, id, _free_texture);
 	}
 
-	const NativeData& Image::data() const
+	Vec2i Renderer::get_texture_size(uint32_t id) const
 	{
-		return (const NativeData&)_data;
+		return Vec2i(_textures[id].width, _textures[id].height);
 	}
 
-	RenderTexture::RenderTexture()
+	void Renderer::set_texture_filter(uint32_t id, uint32_t filter)
 	{
+		ray::SetTextureFilter(_textures[id], filter);
 	}
 
-	RenderTexture::~RenderTexture()
+	void Renderer::set_texture_wrap(uint32_t id, uint32_t wrap)
 	{
+		ray::SetTextureWrap(_textures[id], wrap);
 	}
 
-	bool RenderTexture::create(int32_t w, int32_t h)
+	void Renderer::gen_texture_mipmap(uint32_t id)
 	{
-		clear();
-		_data = ray::LoadRenderTexture(w, h);
-		_size.x = w;
-		_size.y = h;
-		return !empty();
+		ray::GenTextureMipmaps(&_textures[id]);
 	}
 
-	void RenderTexture::clear()
+	
+	uint32_t Renderer::load_render_texture(int32_t w, int32_t h)
 	{
-		if (!empty())
-		{
-			ray::UnloadRenderTexture(_data);
-			_data = {};
-		}
+		auto ret = create_index(_render_textures, _free_render_texture);
+		_render_textures[ret] = ray::LoadRenderTexture(w, h);
+		return ret;
 	}
 
-	bool RenderTexture::empty() const
+	void Renderer::unload_render_texture(uint32_t id)
 	{
-		return _data.id == 0;
+		ray::UnloadRenderTexture(_render_textures[id]);
+		free_index(_render_textures, id, _free_render_texture);
 	}
 
-	const NativeData& RenderTexture::data() const
+	uint32_t Renderer::load_image(const char* path)
 	{
-		return (const NativeData&)_data;
+		auto ret = create_index(_images, _free_image);
+		_images[ret] = ray::LoadImage(path);
+		return ret;
 	}
+
+	void Renderer::unload_image(uint32_t id)
+	{
+		ray::UnloadImage(_images[id]);
+		free_index(_images, id, _free_image);
+	}
+
+
+
 }
