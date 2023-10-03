@@ -48,6 +48,8 @@ namespace box
 		virtual void unload_image(uint32_t id) = 0;
 		virtual uint32_t load_render_texture(int32_t w, int32_t h) = 0;
 		virtual void unload_render_texture(uint32_t id) = 0;
+		virtual uint32_t load_shader(const char* vs_path, const char* fs_path) = 0;
+		virtual void unload_shader(uint32_t id) = 0;
 	};
 
 }

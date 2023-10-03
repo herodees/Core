@@ -1,4 +1,6 @@
 #include "Renderer.hpp"
+#include "Renderer.hpp"
+#include "Renderer.hpp"
 
 namespace box
 {
@@ -142,6 +144,19 @@ namespace box
 	{
 		ray::UnloadRenderTexture(_render_textures[id]);
 		free_index(_render_textures, id, _free_render_texture);
+	}
+
+	uint32_t Renderer::load_shader(const char* vs_path, const char* fs_path)
+	{
+		auto ret = create_index(_shaders, _free_shader);
+		_shaders[ret] = ray::LoadShader(vs_path, fs_path);
+		return ret;
+	}
+
+	void Renderer::unload_shader(uint32_t id)
+	{
+		ray::UnloadShader(_shaders[id]);
+		free_index(_shaders, id, _free_shader);
 	}
 
 	uint32_t Renderer::load_image(const char* path)

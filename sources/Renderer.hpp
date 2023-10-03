@@ -35,6 +35,8 @@ namespace box
 		void unload_image(uint32_t id) override;
 		uint32_t load_render_texture(int32_t w, int32_t h) override;
 		void unload_render_texture(uint32_t id) override;
+		uint32_t load_shader(const char* vs_path, const char* fs_path) override;
+		void unload_shader(uint32_t id) override;
 
 	private:
 		std::vector<ray::Texture2D> _textures;
