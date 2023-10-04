@@ -6,9 +6,36 @@ namespace box
 {
 	class Renderer final : public IRenderer
 	{
+		struct Command
+		{
+			uint32_t vertex;
+			uint32_t vertex_size;
+			uint32_t index;
+			uint32_t index_size;
+			uint32_t blendmode;
+			uint32_t texture;
+		};
 	public:
 		Renderer();
 		~Renderer() override;
+
+		bool begin_frame();
+		void end_frame();
+
+		bool begin_2d(const Camera& cam, bool depthsort);
+		void end_2d();
+
+		void setDepth(uint32_t depth);
+		uint32_t getDepth() const;
+		void setBlendMode(uint32_t bm);
+		uint32_t getBlendMode() const;
+		void setTexture(uint32_t tx);
+		uint32_t getTexture() const;
+		Mesh beginMesh(uint32_t vtx, uint32_t idx);
+		void endMesh(const Mesh& m);
+
+
+
 
 		void begin_drawing() override;
 		void end_drawing() override;
@@ -38,6 +65,11 @@ namespace box
 		uint32_t load_shader(const char* vs_path, const char* fs_path) override;
 		void unload_shader(uint32_t id) override;
 
+	protected:
+		void setup();
+		void newCommand();
+		void drawBuffers(const std::vector<std::pair<uint32_t, uint32_t>>& depths, const std::vector<Command>& cmds, const Vertex* vtx, const int32_t* idx);
+
 	private:
 		std::vector<ray::Texture2D> _textures;
 		std::vector<ray::RenderTexture2D> _render_textures;
@@ -47,6 +79,15 @@ namespace box
 		uint32_t _free_render_texture = -1;
 		uint32_t _free_image = -1;
 		uint32_t _free_shader = -1;
+		Command _command{};
+		uint32_t _vertex_size{};
+		std::vector<Vertex>  _verts;
+		std::vector<int32_t> _inds;
+		std::vector<Command> _commands;
+		std::vector<std::pair<uint32_t, uint32_t>> _depths;
+		bool _depthsort{};
+		Camera _camera{};
+		uint32_t _depth{};
 	};
 
 

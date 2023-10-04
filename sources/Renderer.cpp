@@ -1,6 +1,4 @@
 #include "Renderer.hpp"
-#include "Renderer.hpp"
-#include "Renderer.hpp"
 
 namespace box
 {
@@ -174,4 +172,206 @@ namespace box
 
 
 
+
+
+
+
+
+	bool Renderer::begin_frame()
+	{
+		ray::BeginDrawing();
+		return true;
+	}
+
+	void Renderer::end_frame()
+	{
+		ray::EndDrawing();
+	}
+
+	bool Renderer::begin_2d(const Camera& cam, bool depthsort)
+	{
+		_command.index_size = 0;
+		_command.vertex_size = 0;
+		_command.index = 0;
+		_command.vertex = 0;
+		_command.blendmode = ray::RL_BLEND_ALPHA;
+		_command.texture = 0;
+		_depth = 0;
+		_vertex_size = 0;
+		_depthsort = depthsort;
+		_camera = cam;
+
+		_verts.resize(0xffff);
+		_inds.resize(0xffff);
+		_depths.clear();
+		_commands.clear();
+
+		ray::Camera2D raycam;
+		raycam.offset.x = _camera.offset.x;
+		raycam.offset.y = _camera.offset.y;
+		raycam.target.x = _camera.target.x;
+		raycam.target.y = _camera.target.y;
+		raycam.zoom = _camera.zoom;
+		raycam.rotation = _camera.rotation;
+		BeginMode2D(raycam);
+
+		return true;
+	}
+
+	void Renderer::end_2d()
+	{
+		newCommand();
+
+		if (_depthsort)
+		{
+			std::sort(std::execution::seq,
+				_depths.begin(),
+				_depths.end());
+		}
+
+		drawBuffers(_depths, _commands, _verts.data(), _inds.data());
+
+		ray::EndMode2D();
+
+		_verts.resize(0xffff);
+		_inds.resize(0xffff);
+		_depths.clear();
+		_commands.clear();
+		_command.index_size = 0;
+		_command.vertex_size = 0;
+		_command.index = 0;
+		_command.vertex = 0;
+		_vertex_size = 0;
+		_depth = 0;
+	}
+
+	void Renderer::newCommand()
+	{
+		if (_command.index_size + _command.vertex_size)
+		{
+			_depths.emplace_back(_depth, _commands.size());
+			_commands.emplace_back(_command);
+			_vertex_size += _command.vertex_size;
+			_command.index += _command.index_size;
+			_command.index_size = 0;
+			_command.vertex += _command.vertex_size;
+			_command.vertex_size = 0;
+			_depth = 0;
+		}
+	}
+
+	void Renderer::setDepth(uint32_t depth)
+	{
+		if (!_depthsort || _depth == depth)
+			return;
+		newCommand();
+		_depth = depth;
+	}
+
+
+	uint32_t Renderer::getDepth() const
+	{
+		return _depth;
+	}
+
+	void Renderer::setTexture(uint32_t tx)
+	{
+		if (_command.texture == tx)
+			return;
+		newCommand();
+		_command.texture = tx;
+	}
+
+	uint32_t Renderer::getTexture() const
+	{
+		return _command.texture;
+	}
+
+	void Renderer::setBlendMode(uint32_t bm)
+	{
+		if (_command.blendmode == bm)
+			return;
+		newCommand();
+		_command.blendmode = bm;
+	}
+
+	uint32_t  Renderer::getBlendMode() const
+	{
+		return _command.blendmode;
+	}
+
+	Mesh Renderer::beginMesh(uint32_t vtx, uint32_t idx)
+	{
+		Mesh msh;
+		msh.vertex = &_verts[_command.vertex + _command.vertex_size];
+		msh.index = &_inds[_command.index + _command.index_size];
+		return msh;
+	}
+
+	void Renderer::endMesh(const Mesh& m)
+	{
+		const auto inc = _vertex_size + _command.vertex_size;
+		for (uint32_t n = 0; n < m.index_size; ++n)
+			m.index[n] += inc;
+		_command.vertex_size += m.vertex_size;
+		_command.index_size += m.index_size;
+	}
+
+	void Renderer::drawBuffers(const std::vector<std::pair<uint32_t, uint32_t>>& depths,
+		const std::vector<Command>& cmds,
+		const Vertex* vtx,
+		const int32_t* idx)
+	{
+		if (depths.size())
+		{
+			ray::rlBegin(RL_TRIANGLES);
+			for (auto& ind : depths)
+			{
+				auto& command = cmds[ind.second];
+				{
+					if (ray::rlCheckRenderBatchLimit(command.index_size))
+					{
+						ray::rlBegin(RL_TRIANGLES);
+					}
+
+					ray::rlSetTexture(_textures[command.texture].id);
+					ray::rlSetBlendMode(command.blendmode);
+
+					for (auto i = 0; i < command.index_size; ++i)
+					{
+						auto& vertex = vtx[idx[command.index + i]];
+
+						ray::rlColor4ub(vertex.color.r, vertex.color.g, vertex.color.b, vertex.color.a);
+						ray::rlTexCoord2f(vertex.tex_coord.x, vertex.tex_coord.y);
+						ray::rlVertex2f(vertex.position.x, vertex.position.y);
+					}
+				}
+			}
+			ray::rlEnd();
+		}
+		else
+		{
+			ray::rlBegin(RL_TRIANGLES);
+			for (auto& command : cmds)
+			{
+				if (ray::rlCheckRenderBatchLimit(command.index_size))
+				{
+					ray::rlBegin(RL_TRIANGLES);
+				}
+
+				ray::rlSetTexture(_textures[command.texture].id);
+				ray::rlSetBlendMode(command.blendmode);
+
+				for (auto i = 0; i < command.index_size; ++i)
+				{
+					auto& vertex = vtx[idx[command.index + i]];
+
+					ray::rlColor4ub(vertex.color.r, vertex.color.g, vertex.color.b, vertex.color.a);
+					ray::rlTexCoord2f(vertex.tex_coord.x, vertex.tex_coord.y);
+					ray::rlVertex2f(vertex.position.x, vertex.position.y);
+				}
+			}
+			ray::rlEnd();
+		}
+	}
 }

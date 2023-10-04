@@ -18,6 +18,21 @@ namespace box
 		float zoom{1.f};
 	};
 
+	struct Vertex
+	{
+		Vec2f position;
+		Color  color;
+		Vec2f tex_coord;
+	};
+
+	struct Mesh
+	{
+		Vertex* vertex{};
+		uint32_t vertex_size{};
+		int32_t* index{};
+		uint32_t index_size{};
+	};
+
 	class IRenderer
 	{
 	public:
