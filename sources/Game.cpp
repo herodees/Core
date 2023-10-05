@@ -36,7 +36,7 @@ namespace box
     int32_t Game::run()
 	{
         ray::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
-        ray::SetTargetFPS(60);
+    //    ray::SetTargetFPS(60);
 
         init();
 
@@ -50,16 +50,9 @@ namespace box
 
             auto draw = [&](Vec2f pos, uint32_t d)
             {
-                _renderer.setTexture(texture_id);
-                _renderer.setDepth(d);
-                auto mesh = _renderer.beginMesh(4, 6);
-
-                mesh.index[0] = 0;
-                mesh.index[1] = 1;
-                mesh.index[2] = 2;
-                mesh.index[3] = 2;
-                mesh.index[4] = 3;
-                mesh.index[5] = 0;
+                _renderer.set_texture(texture_id);
+                _renderer.set_depth(d);
+                auto mesh = _renderer.begin_mesh(6);
 
                 mesh.vertex[0].position = { pos.x + 0.f, pos.y + 0.f };
                 mesh.vertex[1].position = { pos.x + 0.f, pos.y + 100.f };
@@ -76,13 +69,15 @@ namespace box
                 mesh.vertex[2].color = { 255,255,255,255 };
                 mesh.vertex[3].color = { 255,255,255,255 };
 
-                mesh.index_size += 6;
-                mesh.vertex_size += 4;
+                mesh.vertex[4] = mesh.vertex[0];
+                mesh.vertex[5] = mesh.vertex[2];
 
-                _renderer.endMesh(mesh);
+                mesh.vertex_size += 6;
+
+                _renderer.end_mesh(mesh);
             };
 
-            for (int i = 0; i < 10; ++i)
+            for (int i = 0; i < 1000; ++i)
             {
                 draw({ i*50.f, i*50.f }, 100-i);
             }

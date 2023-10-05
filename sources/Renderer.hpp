@@ -10,10 +10,10 @@ namespace box
 		{
 			uint32_t vertex;
 			uint32_t vertex_size;
-			uint32_t index;
-			uint32_t index_size;
-			uint32_t blendmode;
-			uint32_t texture;
+			Rect<int16_t> scissor;
+			uint16_t blendmode;
+			uint16_t texture;
+			uint16_t shader;
 		};
 	public:
 		Renderer();
@@ -25,14 +25,20 @@ namespace box
 		bool begin_2d(const Camera& cam, bool depthsort);
 		void end_2d();
 
-		void setDepth(uint32_t depth);
-		uint32_t getDepth() const;
-		void setBlendMode(uint32_t bm);
-		uint32_t getBlendMode() const;
-		void setTexture(uint32_t tx);
-		uint32_t getTexture() const;
-		Mesh beginMesh(uint32_t vtx, uint32_t idx);
-		void endMesh(const Mesh& m);
+		bool begin_scissor_2d(const Recti& rc);
+		void end_scissor_2d();
+
+		void set_scissor(const Rect<int16_t>& rc);
+		void set_shader(uint32_t shader);
+		uint32_t get_shader() const;
+		void set_depth(uint32_t depth);
+		uint32_t get_depth() const;
+		void set_blend_mode(uint32_t bm);
+		uint32_t get_blend_mode() const;
+		void set_texture(uint32_t tx);
+		uint32_t get_texture() const;
+		Mesh begin_mesh(uint32_t vtx);
+		void end_mesh(const Mesh& m);
 
 
 
@@ -68,7 +74,7 @@ namespace box
 	protected:
 		void setup();
 		void newCommand();
-		void drawBuffers(const std::vector<std::pair<uint32_t, uint32_t>>& depths, const std::vector<Command>& cmds, const Vertex* vtx, const int32_t* idx);
+		void drawBuffers(const std::vector<std::pair<uint32_t, uint32_t>>& depths, const std::vector<Command>& cmds, const Vertex* vtx);
 
 	private:
 		std::vector<ray::Texture2D> _textures;
@@ -80,14 +86,14 @@ namespace box
 		uint32_t _free_image = -1;
 		uint32_t _free_shader = -1;
 		Command _command{};
-		uint32_t _vertex_size{};
 		std::vector<Vertex>  _verts;
-		std::vector<int32_t> _inds;
 		std::vector<Command> _commands;
 		std::vector<std::pair<uint32_t, uint32_t>> _depths;
 		bool _depthsort{};
 		Camera _camera{};
 		uint32_t _depth{};
+		Recti _scissor{};
+		bool _scissor_active{};
 	};
 
 

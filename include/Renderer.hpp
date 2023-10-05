@@ -29,8 +29,6 @@ namespace box
 	{
 		Vertex* vertex{};
 		uint32_t vertex_size{};
-		int32_t* index{};
-		uint32_t index_size{};
 	};
 
 	class IRenderer

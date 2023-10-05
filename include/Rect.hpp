@@ -18,7 +18,11 @@ namespace box
 		void expand(const Vec2<T>& value);
 		bool contains(const T& x, const T& y) const;
 		bool contains(const Vec2<T>& v) const;
+		bool operator==(const Rect<T>& o) const;
+		bool operator!=(const Rect<T>& o) const;
 		Vec2<T> size() const;
+		T width() const;
+		T height() const;
 
 		Vec2<T> min;
 		Vec2<T> max;
@@ -57,8 +61,32 @@ namespace box
 	}
 
 	template<typename T>
+	inline bool Rect<T>::operator==(const Rect<T>& o) const
+	{
+		return o.min.x == min.x && o.min.y == min.y && o.max.x == max.x && o.max.y == max.y;
+	}
+
+	template<typename T>
+	inline bool Rect<T>::operator!=(const Rect<T>& o) const
+	{
+		return !operator==(o);
+	}
+
+	template<typename T>
 	inline Vec2<T> Rect<T>::size() const
 	{
 		return max - min;
+	}
+
+	template<typename T>
+	inline T Rect<T>::width() const
+	{
+		return max.x - min.x;
+	}
+
+	template<typename T>
+	inline T Rect<T>::height() const
+	{
+		return max.y - min.y;
 	}
 }

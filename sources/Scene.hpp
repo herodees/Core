@@ -25,9 +25,9 @@ namespace box
 
 		std::string _name;
 		std::string _id;
-		IComponent* (*_create)(entt::registry& reg, entt::entity id);
-		void (*_remove)(entt::registry& reg, entt::entity id);
-		bool (*_contains)(const entt::registry& reg, entt::entity id);
+		IComponent* (*_create)(entt::registry& reg, entt::entity id) {};
+		void (*_remove)(entt::registry& reg, entt::entity id) {};
+		bool (*_contains)(const entt::registry& reg, entt::entity id) {};
 	};
 
 
