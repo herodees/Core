@@ -41,6 +41,7 @@ namespace box
         init();
 
         auto texture_id = _renderer.load_texture(ASSETS_PATH"test.png");
+        _renderer.init();
 
         while (!ray::WindowShouldClose())
         {
@@ -94,6 +95,7 @@ namespace box
 
         }
 
+        _renderer.deinit();
         _renderer.unload_texture(texture_id);
 
         ray::CloseWindow();

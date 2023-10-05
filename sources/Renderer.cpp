@@ -1,4 +1,6 @@
 #include "Renderer.hpp"
+#include "Renderer.hpp"
+#include "Renderer.hpp"
 
 namespace box
 {
@@ -30,64 +32,12 @@ namespace box
 	{
 	}
 
-	void Renderer::begin_drawing()
+	void Renderer::init()
 	{
-		ray::BeginDrawing();
 	}
 
-	void Renderer::end_drawing()
+	void Renderer::deinit()
 	{
-		ray::EndDrawing();
-	}
-
-	void Renderer::begin_texture_drawing(uint32_t id)
-	{
-		ray::BeginTextureMode(_render_textures[id]);
-	}
-
-	void Renderer::end_texture_drawing()
-	{
-		ray::EndTextureMode();
-	}
-
-	void Renderer::begin_2d_mode(Camera camera)
-	{
-		ray::BeginMode2D((ray::Camera2D&)camera);
-	}
-
-	void Renderer::end_2d_mode()
-	{
-		ray::EndMode2D();
-	}
-
-	void Renderer::begin_shader_mode(uint32_t id)
-	{
-		ray::BeginShaderMode(_shaders[id]);
-	}
-
-	void Renderer::end_shader_mode()
-	{
-		ray::EndShaderMode();
-	}
-
-	void Renderer::begin_blend_mode(uint32_t mode)
-	{
-		ray::BeginBlendMode(mode);
-	}
-
-	void Renderer::end_blend_mode()
-	{
-		ray::EndBlendMode();
-	}
-
-	void Renderer::begin_scissor_mode(const Recti& rc)
-	{
-		ray::BeginScissorMode(rc.min.x, rc.min.y, rc.max.x - rc.min.x, rc.max.y - rc.min.y);
-	}
-
-	void Renderer::end_scissor_mode()
-	{
-		ray::EndScissorMode();
 	}
 
 	void Renderer::clear_background(Color c)
@@ -173,10 +123,6 @@ namespace box
 
 
 
-
-
-
-
 	bool Renderer::begin_frame()
 	{
 		ray::BeginDrawing();
@@ -245,6 +191,12 @@ namespace box
 			return false;
 		}
 		_scissor_active = true;
+
+		if(_scissor == rc)
+			return true;
+
+		_scissor = rc;
+		ray::BeginScissorMode(rc.min.x, rc.min.y, rc.width(), rc.height());
 
 		return true;
 	}

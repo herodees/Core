@@ -36,19 +36,6 @@ namespace box
 	public:
 		virtual ~IRenderer() = default;
 
-		virtual void begin_drawing() = 0;
-		virtual void end_drawing() = 0;
-		virtual void begin_texture_drawing(uint32_t id) = 0;
-		virtual void end_texture_drawing() = 0;
-		virtual void begin_2d_mode(Camera camera) = 0;
-		virtual void end_2d_mode() = 0;
-		virtual void begin_shader_mode(uint32_t id) = 0;
-		virtual void end_shader_mode() = 0;
-		virtual void begin_blend_mode(uint32_t mode) = 0;
-		virtual void end_blend_mode() = 0;
-		virtual void begin_scissor_mode(const Recti& rc) = 0;
-		virtual void end_scissor_mode() = 0;
-
 		virtual void clear_background(Color c) = 0;
 
 		virtual uint32_t load_texture(const char* path) = 0;

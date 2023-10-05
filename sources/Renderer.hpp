@@ -19,6 +19,9 @@ namespace box
 		Renderer();
 		~Renderer() override;
 
+		void init();
+		void deinit();
+
 		bool begin_frame();
 		void end_frame();
 
@@ -41,21 +44,6 @@ namespace box
 		void end_mesh(const Mesh& m);
 
 
-
-
-		void begin_drawing() override;
-		void end_drawing() override;
-		void begin_texture_drawing(uint32_t id) override;
-		void end_texture_drawing() override;
-		void begin_2d_mode(Camera camera) override;
-		void end_2d_mode() override;
-		void begin_shader_mode(uint32_t id) override;
-		void end_shader_mode() override;
-		void begin_blend_mode(uint32_t mode) override;
-		void end_blend_mode() override;
-		void begin_scissor_mode(const Recti& rc) override;
-		void end_scissor_mode() override;
-
 		void clear_background(Color c) override;
 
 		uint32_t load_texture(const char* path) override;
@@ -72,7 +60,6 @@ namespace box
 		void unload_shader(uint32_t id) override;
 
 	protected:
-		void setup();
 		void newCommand();
 		void drawBuffers(const std::vector<std::pair<uint32_t, uint32_t>>& depths, const std::vector<Command>& cmds, const Vertex* vtx);
 
