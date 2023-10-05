@@ -10,7 +10,6 @@ namespace box
 		{
 			uint32_t vertex;
 			uint32_t vertex_size;
-			Rect<int16_t> scissor;
 			uint16_t blendmode;
 			uint16_t texture;
 			uint16_t shader;
@@ -25,13 +24,9 @@ namespace box
 		bool begin_frame();
 		void end_frame();
 
-		bool begin_2d(const Camera& cam, bool depthsort);
+		bool begin_2d(const Camera& cam, bool depthsort, const Recti* scissor = nullptr);
 		void end_2d();
 
-		bool begin_scissor_2d(const Recti& rc);
-		void end_scissor_2d();
-
-		void set_scissor(const Rect<int16_t>& rc);
 		void set_shader(uint32_t shader);
 		uint32_t get_shader() const;
 		void set_depth(uint32_t depth);
@@ -79,8 +74,6 @@ namespace box
 		bool _depthsort{};
 		Camera _camera{};
 		uint32_t _depth{};
-		Recti _scissor{};
-		bool _scissor_active{};
 	};
 
 

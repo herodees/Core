@@ -45,9 +45,11 @@ namespace box
 
         while (!ray::WindowShouldClose())
         {
+            Recti scissor(100, 100, 1000, 1000);
+
             _renderer.begin_frame();
             _renderer.clear_background({ 255,255,255,255 });
-            _renderer.begin_2d(Camera(), true);
+            _renderer.begin_2d(Camera(), true, &scissor);
 
             auto draw = [&](Vec2f pos, uint32_t d)
             {
@@ -83,15 +85,11 @@ namespace box
                 draw({ i*50.f, i*50.f }, 100-i);
             }
 
-
-
-
             _renderer.end_2d();
 
             ray::DrawFPS(10, 10);
 
             _renderer.end_frame();
-
 
         }
 

@@ -134,7 +134,7 @@ namespace box
 		ray::EndDrawing();
 	}
 
-	bool Renderer::begin_2d(const Camera& cam, bool depthsort)
+	bool Renderer::begin_2d(const Camera& cam, bool depthsort, const Recti* scissor)
 	{
 		_command.vertex_size = 0;
 		_command.vertex = 0;
@@ -157,6 +157,9 @@ namespace box
 		raycam.rotation = _camera.rotation;
 		BeginMode2D(raycam);
 
+		if (scissor)
+			ray::BeginScissorMode(scissor->min.x, scissor->min.y, scissor->width(), scissor->height());
+
 		return true;
 	}
 
@@ -173,6 +176,7 @@ namespace box
 
 		drawBuffers(_depths, _commands, _verts.data());
 
+		ray::EndScissorMode();
 		ray::EndMode2D();
 
 		_verts.resize(0xffff);
@@ -181,38 +185,6 @@ namespace box
 		_command.vertex_size = 0;
 		_command.vertex = 0;
 		_depth = 0;
-	}
-
-	bool Renderer::begin_scissor_2d(const Recti& rc)
-	{
-		if (rc.width() <= 0 || rc.height() <= 0)
-		{
-			_scissor_active = false;
-			return false;
-		}
-		_scissor_active = true;
-
-		if(_scissor == rc)
-			return true;
-
-		_scissor = rc;
-		ray::BeginScissorMode(rc.min.x, rc.min.y, rc.width(), rc.height());
-
-		return true;
-	}
-
-	void Renderer::end_scissor_2d()
-	{
-		if (!_scissor_active)
-			return;
-	}
-
-	void Renderer::set_scissor(const Rect<int16_t>& rc)
-	{
-		if (_command.scissor == rc)
-			return;
-		newCommand();
-		_command.scissor = rc;
 	}
 
 	void Renderer::set_shader(uint32_t shader)
