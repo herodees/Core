@@ -4,15 +4,45 @@
 
 namespace box
 {
+	class Renderer;
+
+	class Material : public IMaterial
+	{
+	public:
+		Material(Renderer* r);
+		~Material() override = default;
+
+		bool save(const char* path) override;
+		bool load(const char* path) override;
+		void bind(bool activate) override;
+		void draw(const Vertex* vtx, size_t size) override;
+		void set_shader(const char* vs, const char* fs) override;
+		void set_blend_mode(BlendMode blend) override;
+		void set_texture(uint32_t loc, uint32_t texture) override;
+		void set_uniform(uint32_t loc, const void* data, uint32_t count, uint32_t type) override;
+		uint32_t get_location(const char* name) const override;
+
+	protected:
+		BlendMode _blend_mode{ BlendMode::ALPHA };
+		ray::Shader _shader{};
+		uint32_t _texture[4]{};
+		uint32_t _texture_loc[4]{};
+		Renderer* _renderer{};
+	};
+
+
+
 	class Renderer final : public IRenderer
 	{
 		struct Command
 		{
 			uint32_t vertex;
 			uint32_t vertex_size;
-			uint16_t blendmode;
+			IMaterial* material;
+
+			BlendMode blendmode;
 			uint16_t texture;
-			uint16_t shader;
+			IRenderCommand* cmd;
 		};
 	public:
 		Renderer();
@@ -27,17 +57,22 @@ namespace box
 		bool begin_2d(const Camera& cam, bool depthsort, const Recti* scissor = nullptr);
 		void end_2d();
 
-		void set_shader(uint32_t shader);
-		uint32_t get_shader() const;
-		void set_depth(uint32_t depth);
-		uint32_t get_depth() const;
-		void set_blend_mode(uint32_t bm);
-		uint32_t get_blend_mode() const;
-		void set_texture(uint32_t tx);
-		uint32_t get_texture() const;
-		Mesh begin_mesh(uint32_t vtx);
-		void end_mesh(const Mesh& m);
+		void post_command(IRenderCommand* command) override;
+		void post_depth(uint32_t depth) override;
+		void post_blend_mode(BlendMode blend) override;
+		void post_texture(uint32_t texture) override;
+		Mesh begin_post_mesh(uint32_t vertex) override;
+		void end_post_mesh(const Mesh& m) override;
 
+		void set_scissor(const Recti* rc) override;
+		void set_texture(uint32_t texture) override;
+		void set_blend_mode(BlendMode blend) override;
+		void set_uniform(uint32_t loc, const void* data, uint32_t type, uint32_t size) override;
+		void set_uniform_sampler(uint32_t loc, uint32_t texture) override;
+		uint32_t get_uniform_location(uint32_t shader, const char* name) const override;
+
+		void begin_set_shader(uint32_t shader) override;
+		void end_set_shader() override;
 
 		void clear_background(Color c) override;
 
@@ -67,6 +102,7 @@ namespace box
 		uint32_t _free_render_texture = -1;
 		uint32_t _free_image = -1;
 		uint32_t _free_shader = -1;
+		uint32_t _free_material = -1;
 		Command _command{};
 		std::vector<Vertex>  _verts;
 		std::vector<Command> _commands;
@@ -74,7 +110,10 @@ namespace box
 		bool _depthsort{};
 		Camera _camera{};
 		uint32_t _depth{};
+		Material _default;
 	};
+
+
 
 
 }

@@ -49,13 +49,13 @@ namespace box
 
             _renderer.begin_frame();
             _renderer.clear_background({ 255,255,255,255 });
-            _renderer.begin_2d(Camera(), true, &scissor);
+            _renderer.begin_2d(Camera(), false, &scissor);
 
             auto draw = [&](Vec2f pos, uint32_t d)
             {
-                _renderer.set_texture(texture_id);
-                _renderer.set_depth(d);
-                auto mesh = _renderer.begin_mesh(6);
+                _renderer.post_texture(texture_id);
+                _renderer.post_depth(d);
+                auto mesh = _renderer.begin_post_mesh(6);
 
                 mesh.vertex[0].position = { pos.x + 0.f, pos.y + 0.f };
                 mesh.vertex[1].position = { pos.x + 0.f, pos.y + 100.f };
@@ -77,7 +77,7 @@ namespace box
 
                 mesh.vertex_size += 6;
 
-                _renderer.end_mesh(mesh);
+                _renderer.end_post_mesh(mesh);
             };
 
             for (int i = 0; i < 1000; ++i)

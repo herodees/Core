@@ -25,6 +25,7 @@ namespace box
 	}
 
 	Renderer::Renderer()
+		: _default(this)
 	{
 	}
 
@@ -34,10 +35,15 @@ namespace box
 
 	void Renderer::init()
 	{
+		ray::Shader& shader = _shaders.emplace_back();
+		shader.id = ray::rlGetShaderIdDefault();
+		shader.locs = ray::rlGetShaderLocsDefault();
+		ray::Texture2D& texture = _textures.emplace_back();
 	}
 
 	void Renderer::deinit()
 	{
+		_shaders[0] = {};
 	}
 
 	void Renderer::clear_background(Color c)
@@ -138,7 +144,7 @@ namespace box
 	{
 		_command.vertex_size = 0;
 		_command.vertex = 0;
-		_command.blendmode = ray::RL_BLEND_ALPHA;
+		_command.blendmode = BlendMode::ALPHA;
 		_command.texture = 0;
 		_depth = 0;
 		_depthsort = depthsort;
@@ -187,22 +193,42 @@ namespace box
 		_depth = 0;
 	}
 
-	void Renderer::set_shader(uint32_t shader)
+	void Renderer::post_command(IRenderCommand* command)
 	{
-		if (_command.shader == shader)
+		if (_command.cmd == command)
 			return;
 		newCommand();
-		_command.shader = shader;
+		_command.cmd = command;
 	}
 
-	uint32_t Renderer::get_shader() const
+	void Renderer::post_depth(uint32_t depth)
 	{
-		return _command.shader;
+		if (!_depthsort || _depth == depth)
+			return;
+		newCommand();
+		_depth = depth;
 	}
+
+	void Renderer::post_blend_mode(BlendMode blend)
+	{
+		if (_command.blendmode == blend)
+			return;
+		newCommand();
+		_command.blendmode = blend;
+	}
+
+	void Renderer::post_texture(uint32_t texture)
+	{
+		if (_command.texture == texture)
+			return;
+		newCommand();
+		_command.texture = texture;
+	}
+
 
 	void Renderer::newCommand()
 	{
-		if (_command.vertex_size)
+		if (_command.vertex_size || _command.cmd)
 		{
 			_depths.emplace_back(_depth, _commands.size());
 			_commands.emplace_back(_command);
@@ -212,56 +238,59 @@ namespace box
 		}
 	}
 
-	void Renderer::set_depth(uint32_t depth)
-	{
-		if (!_depthsort || _depth == depth)
-			return;
-		newCommand();
-		_depth = depth;
-	}
-
-
-	uint32_t Renderer::get_depth() const
-	{
-		return _depth;
-	}
-
-	void Renderer::set_texture(uint32_t tx)
-	{
-		if (_command.texture == tx)
-			return;
-		newCommand();
-		_command.texture = tx;
-	}
-
-	uint32_t Renderer::get_texture() const
-	{
-		return _command.texture;
-	}
-
-	void Renderer::set_blend_mode(uint32_t bm)
-	{
-		if (_command.blendmode == bm)
-			return;
-		newCommand();
-		_command.blendmode = bm;
-	}
-
-	uint32_t  Renderer::get_blend_mode() const
-	{
-		return _command.blendmode;
-	}
-
-	Mesh Renderer::begin_mesh(uint32_t vtx)
+	Mesh Renderer::begin_post_mesh(uint32_t vtx)
 	{
 		Mesh msh;
 		msh.vertex = &_verts[_command.vertex + _command.vertex_size];
 		return msh;
 	}
 
-	void Renderer::end_mesh(const Mesh& m)
+	void Renderer::end_post_mesh(const Mesh& m)
 	{
 		_command.vertex_size += m.vertex_size;
+	}
+
+	void Renderer::set_scissor(const Recti* rc)
+	{
+		if (rc)
+			ray::BeginScissorMode(rc->min.x, rc->min.y, rc->width(), rc->height());
+		else
+			ray::EndScissorMode();
+	}
+
+	void Renderer::set_texture(uint32_t texture)
+	{
+		ray::rlSetTexture(_textures[texture].id);
+	}
+
+	void Renderer::set_blend_mode(BlendMode blend)
+	{
+		ray::rlSetBlendMode((int32_t)blend);
+	}
+
+	void Renderer::set_uniform(uint32_t loc, const void* data, uint32_t type, uint32_t size)
+	{
+		ray::rlSetUniform(loc, data, type, size);
+	}
+
+	void Renderer::set_uniform_sampler(uint32_t loc, uint32_t texture)
+	{
+		ray::rlSetUniformSampler(loc, _textures[texture].id);
+	}
+
+	uint32_t Renderer::get_uniform_location(uint32_t shader, const char* name) const
+	{
+		return ray::rlGetLocationUniform(shader, name);
+	}
+
+	void Renderer::begin_set_shader(uint32_t shader)
+	{
+		ray::BeginShaderMode(_shaders[shader]);
+	}
+
+	void Renderer::end_set_shader()
+	{
+		ray::EndShaderMode();
 	}
 
 	void Renderer::drawBuffers(const std::vector<std::pair<uint32_t, uint32_t>>& depths,
@@ -275,13 +304,17 @@ namespace box
 			{
 				auto& command = cmds[ind.second];
 				{
+
 					if (ray::rlCheckRenderBatchLimit(command.vertex_size))
 					{
 						ray::rlBegin(RL_TRIANGLES);
 					}
 
 					ray::rlSetTexture(_textures[command.texture].id);
-					ray::rlSetBlendMode(command.blendmode);
+					ray::rlSetBlendMode((int32_t)command.blendmode);
+
+					if (command.cmd)
+						command.cmd->call(*this);
 
 					for (auto i = 0; i < command.vertex_size; ++i)
 					{
@@ -306,7 +339,10 @@ namespace box
 				}
 
 				ray::rlSetTexture(_textures[command.texture].id);
-				ray::rlSetBlendMode(command.blendmode);
+				ray::rlSetBlendMode((int32_t)command.blendmode);
+
+				if (command.cmd)
+					command.cmd->call(*this);
 
 				for (auto i = 0; i < command.vertex_size; ++i)
 				{
@@ -319,5 +355,84 @@ namespace box
 			}
 			ray::rlEnd();
 		}
+	}
+
+	Material::Material(Renderer* r)
+		: _renderer{r},
+		_shader{ ray::rlGetShaderIdDefault(), ray::rlGetShaderLocsDefault() }
+	{
+	}
+
+	bool Material::save(const char* path)
+	{
+		return false;
+	}
+
+	bool Material::load(const char* path)
+	{
+		return false;
+	}
+
+	void Material::bind(bool activate)
+	{
+		if(activate)
+			ray::rlSetShader(_shader.id, _shader.locs);
+		else
+			ray::rlSetShader(ray::rlGetShaderIdDefault(), ray::rlGetShaderLocsDefault());
+	}
+
+	void Material::draw(const Vertex* vtx, size_t size)
+	{
+		if (ray::rlCheckRenderBatchLimit(size))
+		{
+			ray::rlBegin(RL_TRIANGLES);
+		}
+
+		ray::rlSetTexture(_texture[0]);
+		ray::rlSetBlendMode((int32_t)_blend_mode);
+
+		for (size_t i = 0; i < size; ++i)
+		{
+			auto& vertex = vtx[i];
+			ray::rlColor4ub(vertex.color.r, vertex.color.g, vertex.color.b, vertex.color.a);
+			ray::rlTexCoord2f(vertex.tex_coord.x, vertex.tex_coord.y);
+			ray::rlVertex2f(vertex.position.x, vertex.position.y);
+		}
+	}
+
+	void Material::set_shader(const char* vs, const char* fs)
+	{
+		if (_shader.id)
+			ray::UnloadShader(_shader);
+		_shader = ray::LoadShaderFromMemory(vs, fs);
+	}
+
+	void Material::set_blend_mode(BlendMode blend)
+	{
+		_blend_mode = blend;
+	}
+
+	void Material::set_texture(uint32_t loc, uint32_t texture)
+	{
+		for (size_t n = 0; n < std::size(_texture_loc); ++n)
+		{
+			if (!_texture_loc[n] || _texture_loc[n] == loc)
+			{
+				_texture_loc[n] = loc;
+				_texture[n] = texture;
+				break;
+			}
+		}
+	}
+
+	void Material::set_uniform(uint32_t loc, const void* data, uint32_t count, uint32_t type)
+	{
+
+
+	}
+
+	uint32_t Material::get_location(const char* name) const
+	{
+		return ray::rlGetLocationAttrib(_shader.id, name);
 	}
 }
