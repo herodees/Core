@@ -1,6 +1,12 @@
 #include "Renderer.hpp"
 #include "Renderer.hpp"
 #include "Renderer.hpp"
+#include "Renderer.hpp"
+#include "Renderer.hpp"
+#include "Renderer.hpp"
+#include "Renderer.hpp"
+#include "Renderer.hpp"
+#include "Renderer.hpp"
 
 namespace box
 {
@@ -129,29 +135,16 @@ namespace box
 
 
 
-	bool Renderer::begin_frame()
-	{
-		ray::BeginDrawing();
-		return true;
-	}
-
-	void Renderer::end_frame()
-	{
-		ray::EndDrawing();
-	}
-
 	bool Renderer::begin_2d(const Camera& cam, bool depthsort, const Recti* scissor)
 	{
 		_command.vertex_size = 0;
 		_command.vertex = 0;
-		_command.blendmode = BlendMode::ALPHA;
 		_command.texture = 0;
-		_depth = 0;
+		_command.material = &_default;
 		_depthsort = depthsort;
 		_camera = cam;
 
 		_verts.resize(0xffff);
-		_depths.clear();
 		_commands.clear();
 
 		ray::Camera2D raycam;
@@ -176,201 +169,116 @@ namespace box
 		if (_depthsort)
 		{
 			std::sort(std::execution::seq,
-				_depths.begin(),
-				_depths.end());
+				_commands.begin(),
+				_commands.end(),
+				[](const Command& a, const Command& b)
+				{
+					return a.depth < b.depth;
+				});
 		}
 
-		drawBuffers(_depths, _commands, _verts.data());
+		ray::rlBegin(RL_TRIANGLES);
+		for (auto& cmd : _commands)
+		{
+			ray::rlSetTexture(_textures[cmd.texture].id);
+			cmd.material->draw(_verts.data() + cmd.vertex, cmd.vertex_size);
+		}
+		ray::rlEnd();
 
 		ray::EndScissorMode();
 		ray::EndMode2D();
 
 		_verts.resize(0xffff);
-		_depths.clear();
 		_commands.clear();
 		_command.vertex_size = 0;
 		_command.vertex = 0;
-		_depth = 0;
+		_command.depth = 0;
+		_command.material = &_default;
 	}
 
-	void Renderer::post_command(IRenderCommand* command)
+	void Renderer::set_material(IMaterial* material)
 	{
-		if (_command.cmd == command)
-			return;
-		newCommand();
-		_command.cmd = command;
-	}
-
-	void Renderer::post_depth(uint32_t depth)
-	{
-		if (!_depthsort || _depth == depth)
-			return;
-		newCommand();
-		_depth = depth;
-	}
-
-	void Renderer::post_blend_mode(BlendMode blend)
-	{
-		if (_command.blendmode == blend)
-			return;
-		newCommand();
-		_command.blendmode = blend;
-	}
-
-	void Renderer::post_texture(uint32_t texture)
-	{
-		if (_command.texture == texture)
-			return;
-		newCommand();
-		_command.texture = texture;
-	}
-
-
-	void Renderer::newCommand()
-	{
-		if (_command.vertex_size || _command.cmd)
+		if (!_depthsort)
 		{
-			_depths.emplace_back(_depth, _commands.size());
-			_commands.emplace_back(_command);
-			_command.vertex += _command.vertex_size;
-			_command.vertex_size = 0;
-			_depth = 0;
+			_command.material = material;
 		}
-	}
-
-	Mesh Renderer::begin_post_mesh(uint32_t vtx)
-	{
-		Mesh msh;
-		msh.vertex = &_verts[_command.vertex + _command.vertex_size];
-		return msh;
-	}
-
-	void Renderer::end_post_mesh(const Mesh& m)
-	{
-		_command.vertex_size += m.vertex_size;
-	}
-
-	void Renderer::set_scissor(const Recti* rc)
-	{
-		if (rc)
-			ray::BeginScissorMode(rc->min.x, rc->min.y, rc->width(), rc->height());
-		else
-			ray::EndScissorMode();
+		else if (_command.material != material)
+		{
+			newCommand();
+			_command.material = material;
+		}
 	}
 
 	void Renderer::set_texture(uint32_t texture)
 	{
-		ray::rlSetTexture(_textures[texture].id);
-	}
-
-	void Renderer::set_blend_mode(BlendMode blend)
-	{
-		ray::rlSetBlendMode((int32_t)blend);
-	}
-
-	void Renderer::set_uniform(uint32_t loc, const void* data, uint32_t type, uint32_t size)
-	{
-		ray::rlSetUniform(loc, data, type, size);
-	}
-
-	void Renderer::set_uniform_sampler(uint32_t loc, uint32_t texture)
-	{
-		ray::rlSetUniformSampler(loc, _textures[texture].id);
-	}
-
-	uint32_t Renderer::get_uniform_location(uint32_t shader, const char* name) const
-	{
-		return ray::rlGetLocationUniform(shader, name);
-	}
-
-	void Renderer::begin_set_shader(uint32_t shader)
-	{
-		ray::BeginShaderMode(_shaders[shader]);
-	}
-
-	void Renderer::end_set_shader()
-	{
-		ray::EndShaderMode();
-	}
-
-	void Renderer::drawBuffers(const std::vector<std::pair<uint32_t, uint32_t>>& depths,
-		const std::vector<Command>& cmds,
-		const Vertex* vtx)
-	{
-		if (depths.size())
+		if (!_depthsort)
 		{
-			ray::rlBegin(RL_TRIANGLES);
-			for (auto& ind : depths)
-			{
-				auto& command = cmds[ind.second];
-				{
+			ray::rlSetTexture(_textures[texture].id);
+			_command.texture = texture;
+		}
+		else if (_command.texture != texture)
+		{
+			newCommand();
+			_command.texture = texture;
+		}
+	}
 
-					if (ray::rlCheckRenderBatchLimit(command.vertex_size))
-					{
-						ray::rlBegin(RL_TRIANGLES);
-					}
+	void Renderer::set_depth(uint32_t depth)
+	{
+		if (!_depthsort)
+		{
+		}
+		else if (_command.depth != depth)
+		{
+			newCommand();
+			_command.depth = depth;
+		}
+	}
 
-					ray::rlSetTexture(_textures[command.texture].id);
-					ray::rlSetBlendMode((int32_t)command.blendmode);
+	IMaterial* Renderer::get_default_material()
+	{
+		return &_default;
+	}
 
-					if (command.cmd)
-						command.cmd->call(*this);
+	IMaterial* Renderer::get_material()
+	{
+		return _command.material;
+	}
 
-					for (auto i = 0; i < command.vertex_size; ++i)
-					{
-						auto& vertex = vtx[command.vertex + i];
+	Mesh Renderer::begin_mesh(uint32_t vertex)
+	{
+		return Mesh{ &_verts[_command.vertex + _command.vertex_size], 0 };
+	}
 
-						ray::rlColor4ub(vertex.color.r, vertex.color.g, vertex.color.b, vertex.color.a);
-						ray::rlTexCoord2f(vertex.tex_coord.x, vertex.tex_coord.y);
-						ray::rlVertex2f(vertex.position.x, vertex.position.y);
-					}
-				}
-			}
-			ray::rlEnd();
+	void Renderer::end_mesh(const Mesh& mesh)
+	{
+		if (_depthsort)
+		{
+			_command.vertex_size += mesh.vertex_size;
 		}
 		else
 		{
 			ray::rlBegin(RL_TRIANGLES);
-			for (auto& command : cmds)
-			{
-				if (ray::rlCheckRenderBatchLimit(command.vertex_size))
-				{
-					ray::rlBegin(RL_TRIANGLES);
-				}
-
-				ray::rlSetTexture(_textures[command.texture].id);
-				ray::rlSetBlendMode((int32_t)command.blendmode);
-
-				if (command.cmd)
-					command.cmd->call(*this);
-
-				for (auto i = 0; i < command.vertex_size; ++i)
-				{
-					auto& vertex = vtx[command.vertex + i];
-
-					ray::rlColor4ub(vertex.color.r, vertex.color.g, vertex.color.b, vertex.color.a);
-					ray::rlTexCoord2f(vertex.tex_coord.x, vertex.tex_coord.y);
-					ray::rlVertex2f(vertex.position.x, vertex.position.y);
-				}
-			}
+			ray::rlSetTexture(_textures[_command.texture].id);
+			_command.material->draw(mesh.vertex, mesh.vertex_size);
 			ray::rlEnd();
 		}
 	}
 
+	void Renderer::newCommand()
+	{
+		if (_command.vertex_size)
+		{
+			_commands.emplace_back(_command);
+			_command.vertex += _command.vertex_size;
+			_command.vertex_size = 0;
+		}
+	}
+	
 	Material::Material(Renderer* r)
 		: _renderer{r},
 		_shader{ ray::rlGetShaderIdDefault(), ray::rlGetShaderLocsDefault() }
 	{
-	}
-
-	bool Material::save(const char* path)
-	{
-		return false;
-	}
-
-	bool Material::load(const char* path)
-	{
-		return false;
 	}
 
 	void Material::bind(bool activate)
@@ -388,7 +296,6 @@ namespace box
 			ray::rlBegin(RL_TRIANGLES);
 		}
 
-		ray::rlSetTexture(_texture[0]);
 		ray::rlSetBlendMode((int32_t)_blend_mode);
 
 		for (size_t i = 0; i < size; ++i)

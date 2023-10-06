@@ -12,8 +12,6 @@ namespace box
 		Material(Renderer* r);
 		~Material() override = default;
 
-		bool save(const char* path) override;
-		bool load(const char* path) override;
 		void bind(bool activate) override;
 		void draw(const Vertex* vtx, size_t size) override;
 		void set_shader(const char* vs, const char* fs) override;
@@ -38,11 +36,9 @@ namespace box
 		{
 			uint32_t vertex;
 			uint32_t vertex_size;
+			uint32_t texture;
+			uint32_t depth;
 			IMaterial* material;
-
-			BlendMode blendmode;
-			uint16_t texture;
-			IRenderCommand* cmd;
 		};
 	public:
 		Renderer();
@@ -51,28 +47,16 @@ namespace box
 		void init();
 		void deinit();
 
-		bool begin_frame();
-		void end_frame();
-
 		bool begin_2d(const Camera& cam, bool depthsort, const Recti* scissor = nullptr);
 		void end_2d();
 
-		void post_command(IRenderCommand* command) override;
-		void post_depth(uint32_t depth) override;
-		void post_blend_mode(BlendMode blend) override;
-		void post_texture(uint32_t texture) override;
-		Mesh begin_post_mesh(uint32_t vertex) override;
-		void end_post_mesh(const Mesh& m) override;
-
-		void set_scissor(const Recti* rc) override;
-		void set_texture(uint32_t texture) override;
-		void set_blend_mode(BlendMode blend) override;
-		void set_uniform(uint32_t loc, const void* data, uint32_t type, uint32_t size) override;
-		void set_uniform_sampler(uint32_t loc, uint32_t texture) override;
-		uint32_t get_uniform_location(uint32_t shader, const char* name) const override;
-
-		void begin_set_shader(uint32_t shader) override;
-		void end_set_shader() override;
+		void set_material(IMaterial* material);
+		void set_texture(uint32_t texture);
+		void set_depth(uint32_t depth);
+		IMaterial* get_default_material();
+		IMaterial* get_material();
+		Mesh begin_mesh(uint32_t vertex);
+		void end_mesh(const Mesh& mesh);
 
 		void clear_background(Color c) override;
 
@@ -91,8 +75,6 @@ namespace box
 
 	protected:
 		void newCommand();
-		void drawBuffers(const std::vector<std::pair<uint32_t, uint32_t>>& depths, const std::vector<Command>& cmds, const Vertex* vtx);
-
 	private:
 		std::vector<ray::Texture2D> _textures;
 		std::vector<ray::RenderTexture2D> _render_textures;
@@ -106,10 +88,8 @@ namespace box
 		Command _command{};
 		std::vector<Vertex>  _verts;
 		std::vector<Command> _commands;
-		std::vector<std::pair<uint32_t, uint32_t>> _depths;
 		bool _depthsort{};
 		Camera _camera{};
-		uint32_t _depth{};
 		Material _default;
 	};
 

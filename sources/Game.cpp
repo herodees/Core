@@ -47,15 +47,15 @@ namespace box
         {
             Recti scissor(100, 100, 1000, 1000);
 
-            _renderer.begin_frame();
+            ray::BeginDrawing();
             _renderer.clear_background({ 255,255,255,255 });
             _renderer.begin_2d(Camera(), false, &scissor);
 
             auto draw = [&](Vec2f pos, uint32_t d)
             {
-                _renderer.post_texture(texture_id);
-                _renderer.post_depth(d);
-                auto mesh = _renderer.begin_post_mesh(6);
+                _renderer.set_texture(texture_id);
+                _renderer.set_depth(d);
+                auto mesh = _renderer.begin_mesh(6);
 
                 mesh.vertex[0].position = { pos.x + 0.f, pos.y + 0.f };
                 mesh.vertex[1].position = { pos.x + 0.f, pos.y + 100.f };
@@ -77,19 +77,19 @@ namespace box
 
                 mesh.vertex_size += 6;
 
-                _renderer.end_post_mesh(mesh);
+                _renderer.end_mesh(mesh);
             };
 
             for (int i = 0; i < 1000; ++i)
             {
-                draw({ i*50.f, i*50.f }, 100-i);
+                draw({ i*50.f, i*50.f }, 1000-i);
             }
 
             _renderer.end_2d();
 
             ray::DrawFPS(10, 10);
 
-            _renderer.end_frame();
+            ray::EndDrawing();
 
         }
 
