@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <cmath>
 #include <string_view>
+#include <atomic>
 #include "Vec.hpp"
 #include "Rect.hpp"
 #include "Scene.hpp"

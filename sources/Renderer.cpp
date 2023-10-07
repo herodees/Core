@@ -41,15 +41,11 @@ namespace box
 
 	void Renderer::init()
 	{
-		ray::Shader& shader = _shaders.emplace_back();
-		shader.id = ray::rlGetShaderIdDefault();
-		shader.locs = ray::rlGetShaderLocsDefault();
 		ray::Texture2D& texture = _textures.emplace_back();
 	}
 
 	void Renderer::deinit()
 	{
-		_shaders[0] = {};
 	}
 
 	void Renderer::clear_background(Color c)
@@ -106,19 +102,6 @@ namespace box
 		free_index(_render_textures, id, _free_render_texture);
 	}
 
-	uint32_t Renderer::load_shader(const char* vs_path, const char* fs_path)
-	{
-		auto ret = create_index(_shaders, _free_shader);
-		_shaders[ret] = ray::LoadShader(vs_path, fs_path);
-		return ret;
-	}
-
-	void Renderer::unload_shader(uint32_t id)
-	{
-		ray::UnloadShader(_shaders[id]);
-		free_index(_shaders, id, _free_shader);
-	}
-
 	uint32_t Renderer::load_image(const char* path)
 	{
 		auto ret = create_index(_images, _free_image);
@@ -135,7 +118,7 @@ namespace box
 
 
 
-	bool Renderer::begin_2d(const Camera& cam, bool depthsort, const Recti* scissor)
+	bool Renderer::begin_2d(const Camera& cam, bool depthsort)
 	{
 		_command.vertex_size = 0;
 		_command.vertex = 0;
@@ -155,9 +138,6 @@ namespace box
 		raycam.zoom = _camera.zoom;
 		raycam.rotation = _camera.rotation;
 		BeginMode2D(raycam);
-
-		if (scissor)
-			ray::BeginScissorMode(scissor->min.x, scissor->min.y, scissor->width(), scissor->height());
 
 		return true;
 	}
@@ -186,6 +166,7 @@ namespace box
 		ray::rlEnd();
 
 		ray::EndScissorMode();
+		ray::EndTextureMode();
 		ray::EndMode2D();
 
 		_verts.resize(0xffff);
@@ -194,6 +175,16 @@ namespace box
 		_command.vertex = 0;
 		_command.depth = 0;
 		_command.material = &_default;
+	}
+
+	void Renderer::enable_scissor_test(const Recti& scissor)
+	{
+		ray::BeginScissorMode(scissor.min.x, scissor.min.y, scissor.width(), scissor.height());
+	}
+
+	void Renderer::enable_render_texture(uint32_t rt)
+	{
+		ray::BeginTextureMode(_render_textures[rt]);
 	}
 
 	void Renderer::set_material(IMaterial* material)
@@ -332,10 +323,9 @@ namespace box
 		}
 	}
 
-	void Material::set_uniform(uint32_t loc, const void* data, uint32_t count, uint32_t type)
+	void Material::set_uniform(uint32_t loc, const void* data, uint32_t count, UniformType type)
 	{
-
-
+		ray::rlSetUniform(loc, data, (int32_t)type, count);
 	}
 
 	uint32_t Material::get_location(const char* name) const

@@ -49,7 +49,8 @@ namespace box
 
             ray::BeginDrawing();
             _renderer.clear_background({ 255,255,255,255 });
-            _renderer.begin_2d(Camera(), false, &scissor);
+            _renderer.begin_2d(Camera(), false);
+            _renderer.enable_scissor_test(scissor);
 
             auto draw = [&](Vec2f pos, uint32_t d)
             {

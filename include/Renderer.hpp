@@ -7,14 +7,27 @@ namespace box
 
 	enum class BlendMode
 	{
-		ALPHA = 0,                 // Blend textures considering alpha (default)
-		ADDITIVE,                  // Blend textures adding colors
-		MULTIPLIED,                // Blend textures multiplying colors
-		ADD_COLORS,                // Blend textures adding colors (alternative)
-		SUBTRACT_COLORS,           // Blend textures subtracting colors (alternative)
-		ALPHA_PREMULTIPLY,         // Blend premultiplied textures considering alpha
-		CUSTOM,                    // Blend textures using custom src/dst factors (use rlSetBlendFactors())
-		CUSTOM_SEPARATE            // Blend textures using custom src/dst factors (use rlSetBlendFactorsSeparate())
+		ALPHA = 0,
+		ADDITIVE,
+		MULTIPLIED,
+		ADD_COLORS,
+		SUBTRACT_COLORS,
+		ALPHA_PREMULTIPLY,
+		CUSTOM,
+		CUSTOM_SEPARATE
+	};
+
+	enum class UniformType
+	{
+		FLOAT = 0,
+		VEC2,
+		VEC3,
+		VEC4,
+		INT,
+		IVEC2,
+		IVEC3,
+		IVEC4,
+		SAMPLER2D
 	};
 
 	struct Color
@@ -57,7 +70,7 @@ namespace box
 		virtual void set_shader(const char* vs, const char* fs) = 0;
 		virtual void set_blend_mode(BlendMode blend) = 0;
 		virtual void set_texture(uint32_t loc, uint32_t texture) = 0;
-		virtual void set_uniform(uint32_t loc, const void* data, uint32_t count, uint32_t type) = 0;
+		virtual void set_uniform(uint32_t loc, const void* data, uint32_t count, UniformType type) = 0;
 		virtual uint32_t get_location(const char* name) const = 0;
 	};
 
@@ -68,6 +81,19 @@ namespace box
 
 		virtual void clear_background(Color c) = 0;
 
+		virtual bool begin_2d(const Camera& cam, bool depthsort) = 0;
+		virtual void end_2d() = 0;
+
+		virtual void enable_scissor_test(const Recti& scissor) = 0;
+		virtual void enable_render_texture(uint32_t rt) = 0;
+
+		virtual void set_texture(uint32_t texture) = 0;
+		virtual void set_depth(uint32_t depth) = 0;
+		virtual void set_material(IMaterial* material) = 0;
+		virtual IMaterial* get_default_material() = 0;
+		virtual IMaterial* get_material() = 0;
+		virtual Mesh begin_mesh(uint32_t vertex) = 0;
+		virtual void end_mesh(const Mesh& mesh) = 0;
 
 		virtual uint32_t load_texture(const char* path) = 0;
 		virtual void unload_texture(uint32_t id) = 0;
@@ -79,8 +105,6 @@ namespace box
 		virtual void unload_image(uint32_t id) = 0;
 		virtual uint32_t load_render_texture(int32_t w, int32_t h) = 0;
 		virtual void unload_render_texture(uint32_t id) = 0;
-		virtual uint32_t load_shader(const char* vs_path, const char* fs_path) = 0;
-		virtual void unload_shader(uint32_t id) = 0;
 	};
 
 	class IRenderCommand
