@@ -30,7 +30,7 @@ namespace box
 		~AssetRef() { reset(); }
 		AssetRef<AST>& operator=(const AssetRef<AST>& c) { if (c._ptr != _ptr) reset(c._ptr); return *this; }
 		AssetRef<AST>& operator=(AssetRef<AST>&& c) { std::swap(_ptr, c._ptr); return *this; }
-		void reset(AST* ptr = nullptr) { if (_ptr) _ptr->rem_ref(); _ptr(ptr); if (_ptr) _ptr->add_ref(); }
+		void reset(AST* ptr = nullptr) { if (_ptr) _ptr->rem_ref(); _ptr=ptr; if (_ptr) _ptr->add_ref(); }
 
 		AST& operator*() { return *_ptr; }
 		const AST& operator*() const { return *_ptr; }
@@ -47,6 +47,7 @@ namespace box
 	public:
 		virtual ~IAssetProvider() = default;
 
-	//	virtual AssetRef<IAsset> LoadAsset(const char* path) = 0;
+		virtual AssetRef<IAsset> load_texture(const char* path) = 0;
+		virtual AssetRef<IAsset> load_material(const char* path) = 0;
 	};
 }

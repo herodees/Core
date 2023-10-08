@@ -12,6 +12,8 @@ namespace box
 		Material(Renderer* r);
 		~Material() override = default;
 
+		bool save(const char* path) override;
+		bool load(const char* path) override;
 		void bind(bool activate) override;
 		void draw(const Vertex* vtx, size_t size) override;
 		void set_shader(const char* vs, const char* fs) override;
@@ -28,16 +30,30 @@ namespace box
 		Renderer* _renderer{};
 	};
 
+	class Texture : public ITexture
+	{
+		friend class Renderer;
+	public:
+		Texture(Renderer* r, ray::Texture txt);
+		~Texture() override;
+		void set_filter(uint32_t filter) override;
+		void set_wrap(uint32_t wrap) override;
+		void generate_mipmap() override;
+		bool save(const char* path) override;
+		bool load(const char* path) override;
+	protected:
+		Renderer* _renderer;
+	};
 
 
 	class Renderer final : public IRenderer
 	{
 		struct Command
 		{
+			uint32_t depth;
 			uint32_t vertex;
 			uint32_t vertex_size;
 			uint32_t texture;
-			uint32_t depth;
 			IMaterial* material;
 		};
 	public:
@@ -75,6 +91,9 @@ namespace box
 
 		uint32_t load_render_texture(int32_t w, int32_t h) override;
 		void unload_render_texture(uint32_t id) override;
+
+		Texture* load_texture_asset(const char* path);
+		Material* load_material_asset(const char* path);
 
 	protected:
 		void newCommand();

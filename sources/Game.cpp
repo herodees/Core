@@ -1,7 +1,4 @@
 #include "Game.hpp"
-#include "Game.hpp"
-#include "Game.hpp"
-
 
 #define SCREEN_WIDTH (1920)
 #define SCREEN_HEIGHT (1080)
@@ -42,6 +39,9 @@ namespace box
 
         auto texture_id = _renderer.load_texture(ASSETS_PATH"test.png");
         _renderer.init();
+        _assets.init(&_renderer);
+
+        auto tex = _assets.load_texture(ASSETS_PATH"test.png");
 
         while (!ray::WindowShouldClose())
         {

@@ -1,12 +1,4 @@
 #include "Renderer.hpp"
-#include "Renderer.hpp"
-#include "Renderer.hpp"
-#include "Renderer.hpp"
-#include "Renderer.hpp"
-#include "Renderer.hpp"
-#include "Renderer.hpp"
-#include "Renderer.hpp"
-#include "Renderer.hpp"
 
 namespace box
 {
@@ -100,6 +92,19 @@ namespace box
 	{
 		ray::UnloadRenderTexture(_render_textures[id]);
 		free_index(_render_textures, id, _free_render_texture);
+	}
+
+	Texture* Renderer::load_texture_asset(const char* path)
+	{
+		auto txt = ray::LoadTexture(path);
+		if (!txt.id)
+			return nullptr;
+		return new Texture(this, txt);
+	}
+
+	Material* Renderer::load_material_asset(const char* path)
+	{
+		return nullptr;
 	}
 
 	uint32_t Renderer::load_image(const char* path)
@@ -272,6 +277,16 @@ namespace box
 	{
 	}
 
+	bool Material::save(const char* path)
+	{
+		return false;
+	}
+
+	bool Material::load(const char* path)
+	{
+		return false;
+	}
+
 	void Material::bind(bool activate)
 	{
 		if(activate)
@@ -331,5 +346,55 @@ namespace box
 	uint32_t Material::get_location(const char* name) const
 	{
 		return ray::rlGetLocationAttrib(_shader.id, name);
+	}
+
+	Texture::Texture(Renderer* r, ray::Texture txt)
+		: _renderer(r)
+	{
+		_id = txt.id;
+		_size.x = txt.width;
+		_size.y = txt.height;
+		_mipmaps = txt.mipmaps;
+		_format = txt.format;
+	}
+
+	Texture::~Texture()
+	{
+		if(_id)
+			ray::rlUnloadTexture(_id);
+	}
+
+	void Texture::set_filter(uint32_t filter)
+	{
+		ray::SetTextureFilter({ _id }, filter);
+	}
+
+	void Texture::set_wrap(uint32_t wrap)
+	{
+		ray::SetTextureWrap({ _id }, wrap);
+	}
+
+	void Texture::generate_mipmap()
+	{
+		ray::Texture txt;
+		txt.id = _id;
+		txt.width = _size.x;
+		txt.height = _size.y;
+		txt.mipmaps = _mipmaps;
+		txt.format = _format;
+		ray::GenTextureMipmaps(&txt);
+		_mipmaps = txt.mipmaps;
+	}
+
+	bool Texture::save(const char* path)
+	{
+	
+
+		return false;
+	}
+
+	bool Texture::load(const char* path)
+	{
+		return false;
 	}
 }
