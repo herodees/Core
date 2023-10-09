@@ -1,4 +1,5 @@
 #include "Renderer.hpp"
+#include "Asset.hpp"
 
 namespace box
 {
@@ -96,15 +97,16 @@ namespace box
 
 	Texture* Renderer::load_texture_asset(const char* path)
 	{
-		auto txt = ray::LoadTexture(path);
-		if (!txt.id)
-			return nullptr;
-		return new Texture(this, txt);
+		auto ret = new Texture(this);
+		ret->load(path);
+		return ret;
 	}
 
 	Material* Renderer::load_material_asset(const char* path)
 	{
-		return nullptr;
+		auto ret = new Material(this);
+		ret->load(path);
+		return ret;
 	}
 
 	uint32_t Renderer::load_image(const char* path)
@@ -284,7 +286,18 @@ namespace box
 
 	bool Material::load(const char* path)
 	{
-		return false;
+		int32_t size{};
+		auto* data = ray::LoadFileData(path, &size);
+		if (!data)
+			return false;
+
+		msg::Var var;
+		auto ret = var.from_string((const char*)data);
+		ray::UnloadFileData(data);
+		if (ret != msg::ok)
+			return false;
+
+		return true;
 	}
 
 	void Material::bind(bool activate)
@@ -348,14 +361,9 @@ namespace box
 		return ray::rlGetLocationAttrib(_shader.id, name);
 	}
 
-	Texture::Texture(Renderer* r, ray::Texture txt)
+	Texture::Texture(Renderer* r)
 		: _renderer(r)
 	{
-		_id = txt.id;
-		_size.x = txt.width;
-		_size.y = txt.height;
-		_mipmaps = txt.mipmaps;
-		_format = txt.format;
 	}
 
 	Texture::~Texture()
@@ -388,13 +396,32 @@ namespace box
 
 	bool Texture::save(const char* path)
 	{
-	
-
 		return false;
 	}
 
 	bool Texture::load(const char* path)
 	{
-		return false;
+		std::string_view str(path);
+		std::string_view ext = str.substr(str.rfind('.'));
+
+		int32_t size{};
+		auto* data = ray::LoadFileData(path, &size);
+		if (!data)
+			return false;
+
+		ray::Image image = ray::LoadImageFromMemory(ext.data(), data, size);
+		auto txt = ray::LoadTextureFromImage(image);
+		ray::UnloadFileData(data);
+		ray::UnloadImage(image);
+
+		_id = txt.id;
+		_size.x = txt.width;
+		_size.y = txt.height;
+		_mipmaps = txt.mipmaps;
+		_format = txt.format;
+
+		return !!_id;
 	}
+
+
 }

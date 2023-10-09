@@ -4,6 +4,12 @@ namespace box
 {
 	using EntityId = uint32_t;
 
+	enum class ComponentType
+	{
+		TRANSFORM = 0,
+		SPRITE,
+	};
+
 	struct IComponent
 	{
 

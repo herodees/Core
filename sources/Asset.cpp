@@ -16,13 +16,23 @@ namespace box
 		_renderer = renderer;
 	}
 
-	AssetRef<IAsset> AssetProvider::load_texture(const char* path)
+	AssetRef<ITexture> AssetProvider::load_texture(const char* path)
 	{
 		return _renderer->load_texture_asset(path);
 	}
 
-	AssetRef<IAsset> AssetProvider::load_material(const char* path)
+	AssetRef<IMaterial> AssetProvider::load_material(const char* path)
 	{
 		return _renderer->load_material_asset(path);
+	}
+
+	AssetRef<ISound> AssetProvider::load_sound(const char* path)
+	{
+		return AssetRef<ISound>();
+	}
+
+	AssetRef<IPrototype> AssetProvider::load_prototype(const char* path)
+	{
+		return AssetRef<IPrototype>();
 	}
 }

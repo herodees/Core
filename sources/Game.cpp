@@ -30,18 +30,18 @@ namespace box
         return _scene;
     }
 
-    int32_t Game::run()
+    int32_t Game::run(const char* v[], int32_t c)
 	{
         ray::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
     //    ray::SetTargetFPS(60);
 
-        init();
-
-        auto texture_id = _renderer.load_texture(ASSETS_PATH"test.png");
+        init(v, c);
         _renderer.init();
         _assets.init(&_renderer);
+        _scene.init();
 
         auto tex = _assets.load_texture(ASSETS_PATH"test.png");
+        auto texture_id = _renderer.load_texture(ASSETS_PATH"test.png");
 
         while (!ray::WindowShouldClose())
         {
@@ -102,7 +102,7 @@ namespace box
         return 0;
 	}
 
-    void Game::init()
+    void Game::init(const char* v[], int32_t c)
     {
         struct str : Component<str>
         {
@@ -114,6 +114,8 @@ namespace box
 
         str::info = _scene.register_component<str>("test","tst");
         flag::info = _scene.register_component<flag>("flag","flg");
+
+
     }
 
 }

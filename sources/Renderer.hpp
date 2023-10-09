@@ -34,7 +34,7 @@ namespace box
 	{
 		friend class Renderer;
 	public:
-		Texture(Renderer* r, ray::Texture txt);
+		Texture(Renderer* r);
 		~Texture() override;
 		void set_filter(uint32_t filter) override;
 		void set_wrap(uint32_t wrap) override;

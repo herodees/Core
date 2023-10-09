@@ -13,13 +13,13 @@ namespace box
 		Game();
 		~Game() override;
 
-		void init();
+		void init(const char* v[], int32_t c);
 
 		IRenderer& renderer() override final;
 		IAssetProvider& asset() override final;
 		IScene& scene() override final;
 
-		int32_t run();
+		int32_t run(const char* v[], int32_t c);
 
 	private:
 		Renderer _renderer;

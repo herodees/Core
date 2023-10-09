@@ -23,11 +23,17 @@ namespace box
 			}
 		};
 
+		ComponentInfo(std::string_view name, std::string_view id, entt::registry::base_type& storage)
+			: _name(name), _id(id), _storage(storage){}
+		[[nodiscard]] bool contains(entt::entity id) const noexcept { return _storage.contains(id); }
+		void create(entt::entity id) const { _storage.emplace(id); }
+		void remove(entt::entity id) const { _storage.remove(id); }
+		void patch(entt::entity id) const { static_cast<entt::registry::storage_for_type<IComponent>&>(_storage).patch(id); }
+		IComponent& get(entt::entity id) const { return *static_cast<IComponent*>(_storage.get(id)); }
+
 		std::string _name;
 		std::string _id;
-		IComponent* (*_create)(entt::registry& reg, entt::entity id) {};
-		void (*_remove)(entt::registry& reg, entt::entity id) {};
-		bool (*_contains)(const entt::registry& reg, entt::entity id) {};
+		entt::registry::base_type& _storage;
 	};
 
 
@@ -38,6 +44,8 @@ namespace box
 		Scene();
 		~Scene() override;
 
+		void init();
+
 		EntityId create() override;
 		void release(EntityId id) override;
 		IComponent* add(EntityId id, std::string_view component) override;
@@ -45,8 +53,12 @@ namespace box
 		bool contains(EntityId id, std::string_view component) const override;
 
 		template <typename C>
-		const ComponentInfo* register_component(std::string_view name, std::string_view id);
-
+		const ComponentInfo* register_component(std::string_view name, std::string_view id)
+		{
+			ComponentInfo info(name, id, _registry.storage<C>());
+			const ComponentInfo& ret = *_components.insert(info).first;
+			return &ret;
+		}
 	private:
 		entt::registry _registry;
 		std::set<ComponentInfo, ComponentInfo::CompareId> _components;
@@ -61,20 +73,4 @@ namespace box
 	};
 
 	template <typename T> const ComponentInfo* Component<T>::info = nullptr;
-
-	template<typename C>
-	inline const ComponentInfo* Scene::register_component(std::string_view name, std::string_view id)
-	{
-		ComponentInfo info;
-		info._name = name;
-		info._id = id;
-		if constexpr(std::is_empty_v<C>)
-			info._create = [](entt::registry& reg, entt::entity id) -> IComponent* { reg.emplace_or_replace<C>(id); return nullptr; };
-		else
-			info._create = [](entt::registry& reg, entt::entity id) -> IComponent* { return &reg.emplace_or_replace<C>(id); };
-		info._remove = [](entt::registry& reg, entt::entity id) -> void { reg.remove<C>(id); };
-		info._contains = [](const entt::registry& reg, entt::entity id) -> bool { return reg.any_of<C>(id); };
-		const ComponentInfo& ret = *_components.insert(info).first;
-		return &ret;
-	}
 }

@@ -58,37 +58,6 @@ namespace box
 		uint32_t vertex_size{};
 	};
 
-	class IMaterial : public IAsset
-	{
-	public:
-		virtual ~IMaterial() = default;
-		virtual void bind(bool activate) = 0;
-		virtual void draw(const Vertex* vtx, size_t size) = 0;
-		virtual void set_shader(const char* vs, const char* fs) = 0;
-		virtual void set_blend_mode(BlendMode blend) = 0;
-		virtual void set_texture(uint32_t loc, uint32_t texture) = 0;
-		virtual void set_uniform(uint32_t loc, const void* data, uint32_t count, UniformType type) = 0;
-		virtual uint32_t get_location(const char* name) const = 0;
-	};
-
-	class ITexture : public IAsset
-	{
-	public:
-		virtual ~ITexture() = default;
-		const Vec2i& size() const { return _size; }
-		uint32_t handle() const { return _id; }
-		int32_t get_format() const { return _format; }
-		virtual void set_filter(uint32_t filter) = 0;
-		virtual void set_wrap(uint32_t wrap) = 0;
-		virtual void generate_mipmap() = 0;
-
-	protected:
-		uint32_t _id{};
-		Vec2i _size{};
-		int32_t _mipmaps{};
-		int32_t _format{};
-	};
-
 	class IRenderer
 	{
 	public:

@@ -14,8 +14,10 @@ namespace box
 
 		void init(Renderer* renderer);
 
-		AssetRef<IAsset> load_texture(const char* path) override;
-		AssetRef<IAsset> load_material(const char* path) override;
+		AssetRef<ITexture> load_texture(const char* path) override;
+		AssetRef<IMaterial> load_material(const char* path) override;
+		AssetRef<ISound> load_sound(const char* path) override;
+		AssetRef<IPrototype> load_prototype(const char* path) override;
 
 	private:
 		Renderer* _renderer{};
