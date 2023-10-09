@@ -4,36 +4,14 @@
 
 namespace box
 {
-	struct ComponentInfo
+	struct ComponentDefinition
 	{
-		struct CompareId
-		{
-			using is_transparent = void;
-			bool operator()(ComponentInfo const& a, ComponentInfo const& b) const
-			{
-				return a._id < b._id;
-			}
-			bool operator()(std::string_view const& id, ComponentInfo const& b) const
-			{
-				return id < b._id;
-			}
-			bool operator()(ComponentInfo const& a, std::string_view const& id) const
-			{
-				return a._id < id;
-			}
-		};
+		std::string id;
+		std::string name;
+		entt::registry::base_type* storage;
 
-		ComponentInfo(std::string_view name, std::string_view id, entt::registry::base_type& storage)
-			: _name(name), _id(id), _storage(storage){}
-		[[nodiscard]] bool contains(entt::entity id) const noexcept { return _storage.contains(id); }
-		void create(entt::entity id) const { _storage.emplace(id); }
-		void remove(entt::entity id) const { _storage.remove(id); }
-		void patch(entt::entity id) const { static_cast<entt::registry::storage_for_type<IComponent>&>(_storage).patch(id); }
-		IComponent& get(entt::entity id) const { return *static_cast<IComponent*>(_storage.get(id)); }
-
-		std::string _name;
-		std::string _id;
-		entt::registry::base_type& _storage;
+		static ComponentDefinition* create(std::string_view id, std::string_view name, entt::registry::base_type* str);
+		static ComponentDefinition* find(std::string_view id);
 	};
 
 
@@ -48,20 +26,16 @@ namespace box
 
 		EntityId create() override;
 		void release(EntityId id) override;
-		IComponent* add(EntityId id, std::string_view component) override;
+		IComponent* emplace(EntityId id, std::string_view component) override;
 		void remove(EntityId id, std::string_view component) override;
 		bool contains(EntityId id, std::string_view component) const override;
+		void patch(EntityId id, std::string_view component) override;
 
 		template <typename C>
-		const ComponentInfo* register_component(std::string_view name, std::string_view id)
-		{
-			ComponentInfo info(name, id, _registry.storage<C>());
-			const ComponentInfo& ret = *_components.insert(info).first;
-			return &ret;
-		}
+		const ComponentDefinition* register_component(std::string_view name, std::string_view id);
+
 	private:
 		entt::registry _registry;
-		std::set<ComponentInfo, ComponentInfo::CompareId> _components;
 	};
 
 
@@ -69,8 +43,46 @@ namespace box
 	template <typename T>
 	struct Component : IComponent
 	{
-		static const ComponentInfo* info;
+		static const ComponentDefinition* definition;
+
+		static bool contains(EntityId id);
+		static void patch(EntityId id);
+		static void remove(EntityId id);
+		static T* emplace(EntityId id);
 	};
 
-	template <typename T> const ComponentInfo* Component<T>::info = nullptr;
+
+
+	template <typename T> const ComponentDefinition* Component<T>::definition = nullptr;
+
+	template<typename C>
+	inline const ComponentDefinition* Scene::register_component(std::string_view name, std::string_view id)
+	{
+		C::definition = ComponentDefinition::create(id, name, &_registry.storage<C>());
+		return C::definition;
+	}
+
+	template<typename T>
+	inline bool Component<T>::contains(EntityId id)
+	{
+		return Component<T>::definition->storage->contains((entt::entity)id);
+	}
+
+	template<typename T>
+	inline void Component<T>::patch(EntityId id)
+	{
+		static_cast<entt::storage_for_t<T>*>(Component<T>::definition->storage)->patch((entt::entity)id);
+	}
+
+	template<typename T>
+	inline void Component<T>::remove(EntityId id)
+	{
+		Component<T>::definition->storage->remove((entt::entity)id);
+	}
+
+	template<typename T>
+	inline T* Component<T>::emplace(EntityId id)
+	{
+		return static_cast<T*>(Component<T>::definition->storage->get((entt::entity)id));
+	}
 }

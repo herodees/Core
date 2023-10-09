@@ -112,9 +112,9 @@ namespace box
         {
         };
 
-        str::info = _scene.register_component<str>("test","tst");
-        flag::info = _scene.register_component<flag>("flag","flg");
-
+        auto nfo1 = _scene.register_component<str>("test","tst");
+        auto nfo2 = _scene.register_component<flag>("flag","flg");
+        auto nfo3 = Component<str>::definition;
 
     }
 
