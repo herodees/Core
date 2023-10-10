@@ -18,12 +18,12 @@ namespace box
 
 	AssetRef<ITexture> AssetProvider::load_texture(const char* path)
 	{
-		return _renderer->load_texture_asset(path);
+		return _renderer->load_texture(path);
 	}
 
 	AssetRef<IMaterial> AssetProvider::load_material(const char* path)
 	{
-		return _renderer->load_material_asset(path);
+		return _renderer->load_material(path);
 	}
 
 	AssetRef<ISound> AssetProvider::load_sound(const char* path)

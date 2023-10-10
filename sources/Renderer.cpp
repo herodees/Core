@@ -28,14 +28,14 @@ namespace box
 		ray::Camera2D cam;
 	}
 
-	Texture* Renderer::load_texture_asset(const char* path)
+	Texture* Renderer::load_texture(const char* path)
 	{
 		auto ret = new Texture(this);
 		ret->load(path);
 		return ret;
 	}
 
-	Material* Renderer::load_material_asset(const char* path)
+	Material* Renderer::load_material(const char* path)
 	{
 		auto ret = new Material(this);
 		ret->load(path);
@@ -287,17 +287,9 @@ namespace box
 		_blend_mode = blend;
 	}
 
-	void Material::set_texture(uint32_t loc, uint32_t texture)
+	void Material::set_texture(uint32_t loc, const ITexture* texture)
 	{
-		for (size_t n = 0; n < std::size(_texture_loc); ++n)
-		{
-			if (!_texture_loc[n] || _texture_loc[n] == loc)
-			{
-				_texture_loc[n] = loc;
-				_texture[n] = texture;
-				break;
-			}
-		}
+
 	}
 
 	void Material::set_uniform(uint32_t loc, const void* data, uint32_t count, UniformType type)

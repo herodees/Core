@@ -3,6 +3,11 @@
 namespace box
 {
 	struct Vertex;
+	class IAssetProvider;
+	class ITexture;
+	class IMaterial;
+	class IPrototype;
+	class ISound;
 	enum class BlendMode;
 	enum class UniformType;
 
@@ -31,7 +36,7 @@ namespace box
 		virtual void draw(const Vertex* vtx, size_t size) = 0;
 		virtual void set_shader(const char* vs, const char* fs) = 0;
 		virtual void set_blend_mode(BlendMode blend) = 0;
-		virtual void set_texture(uint32_t loc, uint32_t texture) = 0;
+		virtual void set_texture(uint32_t loc, const ITexture* texture) = 0;
 		virtual void set_uniform(uint32_t loc, const void* data, uint32_t count, UniformType type) = 0;
 		virtual uint32_t get_location(const char* name) const = 0;
 	};

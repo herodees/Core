@@ -3,6 +3,8 @@
 namespace box
 {
 	class IRenderer;
+	class ITexture;
+	class IMaterial;
 
 	enum class BlendMode
 	{
@@ -93,6 +95,7 @@ namespace box
 		virtual Mesh begin_mesh(uint32_t vertex) = 0;
 		virtual void end_mesh(const Mesh& mesh) = 0;
 
+		virtual IRenderTexture* load_render_texture(uint32_t width, uint32_t height, bool depth = false) = 0;
 	};
 
 }

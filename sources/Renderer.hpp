@@ -18,17 +18,15 @@ namespace box
 		void draw(const Vertex* vtx, size_t size) override;
 		void set_shader(const char* vs, const char* fs) override;
 		void set_blend_mode(BlendMode blend) override;
-		void set_texture(uint32_t loc, uint32_t texture) override;
+		void set_texture(uint32_t loc, const ITexture* texture) override;
 		void set_uniform(uint32_t loc, const void* data, uint32_t count, UniformType type) override;
 		uint32_t get_location(const char* name) const override;
 		bool compile();
 
 	protected:
+		Renderer* _renderer{};
 		BlendMode _blend_mode{ BlendMode::ALPHA };
 		ray::Shader _shader{};
-		uint32_t _texture[4]{};
-		uint32_t _texture_loc[4]{};
-		Renderer* _renderer{};
 		std::string _fragment;
 		std::string _vertex;
 	};
@@ -106,9 +104,10 @@ namespace box
 
 		void clear_background(Color c) override;
 
-		Texture* load_texture_asset(const char* path);
-		Material* load_material_asset(const char* path);
-		IRenderTexture* load_render_texture(uint32_t width, uint32_t height, bool depth = false);
+		Texture* load_texture(const char* path);
+		Material* load_material(const char* path);
+
+		IRenderTexture* load_render_texture(uint32_t width, uint32_t height, bool depth = false) override;
 
 	protected:
 		void newCommand();
