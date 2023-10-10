@@ -92,6 +92,9 @@ namespace box
 		AST* operator->() { return _ptr; }
 		const AST* operator->() const { return _ptr; }
 
+		operator AST*() { return _ptr; }
+		operator const AST* () const { return _ptr; }
+
 		AST* _ptr{};
 	};
 

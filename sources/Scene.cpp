@@ -44,8 +44,6 @@ namespace box
 
 	void Scene::init()
 	{
-		auto* cmp = _registry.storage(0);
-		cmp = cmp;
 	}
 
 	EntityId Scene::create()
@@ -56,6 +54,11 @@ namespace box
 	void Scene::release(EntityId id)
 	{
 		_registry.destroy((entt::entity)id);
+	}
+
+	bool Scene::is_valid(EntityId id) const
+	{
+		return _registry.valid((entt::entity)id);
 	}
 
 	IComponent* Scene::emplace(EntityId id, std::string_view component)

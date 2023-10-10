@@ -3,25 +3,6 @@
 
 namespace box
 {
-	template <typename T>
-	uint32_t create_index(T& data, uint32_t& free_id)
-	{
-		if (free_id < data.size())
-		{
-			const uint32_t ret = free_id;
-			free_id = (uint32_t&)data[free_id];
-			return ret;
-		}
-		data.emplace_back();
-		return uint32_t(data.size() - 1);
-	}
-
-	template <typename T>
-	void free_index(T& data, uint32_t id, uint32_t& free_id)
-	{
-		(uint32_t&)(data[id]) = free_id;
-		free_id = id;
-	}
 
 	Renderer::Renderer()
 		: _default(this)
@@ -34,7 +15,6 @@ namespace box
 
 	void Renderer::init()
 	{
-		ray::Texture2D& texture = _textures.emplace_back();
 	}
 
 	void Renderer::deinit()
@@ -46,53 +26,6 @@ namespace box
 		ray::ClearBackground((ray::Color&)c);
 
 		ray::Camera2D cam;
-	}
-
-	uint32_t Renderer::load_texture(const char* path)
-	{
-		auto ret = create_index(_textures, _free_texture);
-		_textures[ret] = ray::LoadTexture(path);
-		return ret;
-	}
-
-	void Renderer::unload_texture(uint32_t id)
-	{
-		ray::UnloadTexture(_textures[id]);
-		free_index(_textures, id, _free_texture);
-	}
-
-	Vec2i Renderer::get_texture_size(uint32_t id) const
-	{
-		return Vec2i(_textures[id].width, _textures[id].height);
-	}
-
-	void Renderer::set_texture_filter(uint32_t id, uint32_t filter)
-	{
-		ray::SetTextureFilter(_textures[id], filter);
-	}
-
-	void Renderer::set_texture_wrap(uint32_t id, uint32_t wrap)
-	{
-		ray::SetTextureWrap(_textures[id], wrap);
-	}
-
-	void Renderer::gen_texture_mipmap(uint32_t id)
-	{
-		ray::GenTextureMipmaps(&_textures[id]);
-	}
-
-	
-	uint32_t Renderer::load_render_texture(int32_t w, int32_t h)
-	{
-		auto ret = create_index(_render_textures, _free_render_texture);
-		_render_textures[ret] = ray::LoadRenderTexture(w, h);
-		return ret;
-	}
-
-	void Renderer::unload_render_texture(uint32_t id)
-	{
-		ray::UnloadRenderTexture(_render_textures[id]);
-		free_index(_render_textures, id, _free_render_texture);
 	}
 
 	Texture* Renderer::load_texture_asset(const char* path)
@@ -109,21 +42,12 @@ namespace box
 		return ret;
 	}
 
-	uint32_t Renderer::load_image(const char* path)
+	IRenderTexture* Renderer::load_render_texture(uint32_t width, uint32_t height, bool depth)
 	{
-		auto ret = create_index(_images, _free_image);
-		_images[ret] = ray::LoadImage(path);
+		auto ret = new RenderTexture(this);
+		ret->create(width, height, depth);
 		return ret;
 	}
-
-	void Renderer::unload_image(uint32_t id)
-	{
-		ray::UnloadImage(_images[id]);
-		free_index(_images, id, _free_image);
-	}
-
-
-
 
 	bool Renderer::begin_2d(const Camera& cam, bool depthsort)
 	{
@@ -133,6 +57,7 @@ namespace box
 		_command.material = &_default;
 		_depthsort = depthsort;
 		_camera = cam;
+		_target = nullptr;
 
 		_verts.resize(0xffff);
 		_commands.clear();
@@ -167,7 +92,7 @@ namespace box
 		ray::rlBegin(RL_TRIANGLES);
 		for (auto& cmd : _commands)
 		{
-			ray::rlSetTexture(_textures[cmd.texture].id);
+			ray::rlSetTexture(cmd.texture ? cmd.texture->handle() : 0);
 			cmd.material->draw(_verts.data() + cmd.vertex, cmd.vertex_size);
 		}
 		ray::rlEnd();
@@ -184,14 +109,27 @@ namespace box
 		_command.material = &_default;
 	}
 
+
 	void Renderer::enable_scissor_test(const Recti& scissor)
 	{
 		ray::BeginScissorMode(scissor.min.x, scissor.min.y, scissor.width(), scissor.height());
 	}
 
-	void Renderer::enable_render_texture(uint32_t rt)
+	void Renderer::enable_render_texture(const IRenderTexture* rt)
 	{
-		ray::BeginTextureMode(_render_textures[rt]);
+		if (_target == rt)
+			return;
+
+		_target = rt;
+
+		if (_target)
+		{
+			ray::BeginTextureMode(static_cast<const RenderTexture*>(_target)->get());
+		}
+		else
+		{
+			ray::EndTextureMode();
+		}
 	}
 
 	void Renderer::set_material(IMaterial* material)
@@ -207,11 +145,11 @@ namespace box
 		}
 	}
 
-	void Renderer::set_texture(uint32_t texture)
+	void Renderer::set_texture(const ITexture* texture)
 	{
 		if (!_depthsort)
 		{
-			ray::rlSetTexture(_textures[texture].id);
+			ray::rlSetTexture(texture ? texture->handle() : 0);
 			_command.texture = texture;
 		}
 		else if (_command.texture != texture)
@@ -257,7 +195,7 @@ namespace box
 		else
 		{
 			ray::rlBegin(RL_TRIANGLES);
-			ray::rlSetTexture(_textures[_command.texture].id);
+			ray::rlSetTexture(_command.texture ? _command.texture->handle() : 0);
 			_command.material->draw(mesh.vertex, mesh.vertex_size);
 			ray::rlEnd();
 		}
@@ -281,7 +219,14 @@ namespace box
 
 	bool Material::save(const char* path)
 	{
-		return false;
+		msg::Var var;
+		var.set_item("fragment", std::string_view(_fragment));
+		var.set_item("vertex", std::string_view(_vertex));
+		var.set_item("blend", (int32_t)_blend_mode);
+		std::string out;
+		var.to_string(out);
+
+		return ray::SaveFileData(path, out.data(), out.size() + 1);;
 	}
 
 	bool Material::load(const char* path)
@@ -297,7 +242,11 @@ namespace box
 		if (ret != msg::ok)
 			return false;
 
-		return true;
+		_fragment.assign(var.get_item("fragment").str());
+		_vertex.assign(var.get_item("vertex").str());
+		_blend_mode = (BlendMode)var.get_item("blend").get(0);
+
+		return compile();
 	}
 
 	void Material::bind(bool activate)
@@ -361,6 +310,16 @@ namespace box
 		return ray::rlGetLocationAttrib(_shader.id, name);
 	}
 
+	bool Material::compile()
+	{
+		if (_shader.id)
+		{
+			ray::UnloadShader(_shader);
+		}
+		_shader = ray::LoadShaderFromMemory(_vertex.c_str(), _fragment.c_str());
+		return !!_shader.id;
+	}
+
 	Texture::Texture(Renderer* r)
 		: _renderer(r)
 	{
@@ -370,6 +329,17 @@ namespace box
 	{
 		if(_id)
 			ray::rlUnloadTexture(_id);
+	}
+
+	void Texture::attach(const ray::Texture& txt)
+	{
+		if (_id)
+			ray::rlUnloadTexture(_id);
+		_id = txt.id;
+		_size.x = txt.width;
+		_size.y = txt.height;
+		_mipmaps = txt.mipmaps;
+		_format = txt.format;
 	}
 
 	void Texture::set_filter(uint32_t filter)
@@ -414,14 +384,91 @@ namespace box
 		ray::UnloadFileData(data);
 		ray::UnloadImage(image);
 
-		_id = txt.id;
-		_size.x = txt.width;
-		_size.y = txt.height;
-		_mipmaps = txt.mipmaps;
-		_format = txt.format;
-
+		attach(txt);
 		return !!_id;
 	}
 
+	ray::Texture Texture::get() const
+	{
+		ray::Texture out;
+		out.id = _id;
+		out.width = _size.x;
+		out.height = _size.y;
+		out.mipmaps = _mipmaps;
+		out.format = _format;
+		return out;
+	}
+
+
+	RenderTexture::RenderTexture(Renderer* r) :
+		_texture(r), _depth(r)
+	{
+	}
+
+	RenderTexture::~RenderTexture()
+	{
+	}
+
+	const ITexture& RenderTexture::get_texture() const
+	{
+		return _texture;
+	}
+
+	const ITexture& RenderTexture::get_depth() const
+	{
+		return _depth;
+	}
+
+	ray::RenderTexture RenderTexture::get() const
+	{
+		ray::RenderTexture out;
+		out.id = _id;
+		out.depth = _depth.get();
+		out.texture = _texture.get();
+		return out;
+	}
+
+	bool RenderTexture::create(uint32_t width, uint32_t height, bool depth)
+	{
+		_id = ray::rlLoadFramebuffer(width, height);   // Load an empty framebuffer
+
+		if (_id > 0)
+		{
+			ray::rlEnableFramebuffer(_id);
+
+			ray::Texture texture{};
+
+			// Create color texture (default to RGBA)
+			texture.id = ray::rlLoadTexture(NULL, width, height, ray::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8, 1);
+			texture.width = width;
+			texture.height = height;
+			texture.format = ray::PIXELFORMAT_UNCOMPRESSED_R8G8B8A8;
+			texture.mipmaps = 1;
+			_texture.attach(texture);
+
+			if (depth)
+			{
+				// Create depth renderbuffer/texture
+				texture.id = ray::rlLoadTextureDepth(width, height, true);
+				texture.width = width;
+				texture.height = height;
+				texture.format = 19;       //DEPTH_COMPONENT_24BIT?
+				texture.mipmaps = 1;
+				_depth.attach(texture);
+			}
+
+			// Attach color texture and depth renderbuffer/texture to FBO
+			ray::rlFramebufferAttach(_id, _texture.handle(), ray::RL_ATTACHMENT_COLOR_CHANNEL0, ray::RL_ATTACHMENT_TEXTURE2D, 0);
+			if (depth)
+				ray::rlFramebufferAttach(_id, _texture.handle(), ray::RL_ATTACHMENT_DEPTH, ray::RL_ATTACHMENT_RENDERBUFFER, 0);
+
+			// Check if fbo is complete with attachments (valid)
+			if (ray::rlFramebufferComplete(_id)) TRACELOG(LOG_INFO, "FBO: [ID %i] Framebuffer object created successfully", _id);
+
+			ray::rlDisableFramebuffer();
+		}
+		else TRACELOG(LOG_WARNING, "FBO: Framebuffer object can not be created");
+		return _id > 0;
+	}
 
 }

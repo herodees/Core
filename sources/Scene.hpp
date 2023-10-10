@@ -26,6 +26,7 @@ namespace box
 
 		EntityId create() override;
 		void release(EntityId id) override;
+		bool is_valid(EntityId id) const override;
 		IComponent* emplace(EntityId id, std::string_view component) override;
 		void remove(EntityId id, std::string_view component) override;
 		bool contains(EntityId id, std::string_view component) const override;

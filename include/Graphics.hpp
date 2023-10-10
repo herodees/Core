@@ -58,6 +58,20 @@ namespace box
 		uint32_t vertex_size{};
 	};
 
+	class IRenderTexture
+	{
+	public:
+		virtual ~IRenderTexture() = default;
+		virtual const ITexture& get_texture() const = 0;
+		virtual const ITexture& get_depth() const = 0;
+		virtual bool create(uint32_t width, uint32_t height, bool depth = false) = 0;
+		const Vec2i& size() const { return _size; }
+
+	protected:
+		uint32_t _id{};
+		Vec2i _size;
+	};
+
 	class IRenderer
 	{
 	public:
@@ -69,9 +83,9 @@ namespace box
 		virtual void end_2d() = 0;
 
 		virtual void enable_scissor_test(const Recti& scissor) = 0;
-		virtual void enable_render_texture(uint32_t rt) = 0;
+		virtual void enable_render_texture(const IRenderTexture* rt) = 0;
 
-		virtual void set_texture(uint32_t texture) = 0;
+		virtual void set_texture(const ITexture* texture) = 0;
 		virtual void set_depth(uint32_t depth) = 0;
 		virtual void set_material(IMaterial* material) = 0;
 		virtual IMaterial* get_default_material() = 0;
@@ -79,16 +93,6 @@ namespace box
 		virtual Mesh begin_mesh(uint32_t vertex) = 0;
 		virtual void end_mesh(const Mesh& mesh) = 0;
 
-		virtual uint32_t load_texture(const char* path) = 0;
-		virtual void unload_texture(uint32_t id) = 0;
-		virtual Vec2i get_texture_size(uint32_t id) const = 0;
-		virtual void set_texture_filter(uint32_t id, uint32_t filter) = 0;
-		virtual void set_texture_wrap(uint32_t id, uint32_t wrap) = 0;
-		virtual void gen_texture_mipmap(uint32_t id) = 0;
-		virtual uint32_t load_image(const char* path) = 0;
-		virtual void unload_image(uint32_t id) = 0;
-		virtual uint32_t load_render_texture(int32_t w, int32_t h) = 0;
-		virtual void unload_render_texture(uint32_t id) = 0;
 	};
 
 }
