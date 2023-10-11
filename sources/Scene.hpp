@@ -40,6 +40,8 @@ namespace box
 		template <typename C>
 		const ComponentDefinition* register_component(std::string_view name, std::string_view id);
 
+		entt::registry& registry() { return _registry; }
+
 	private:
 		entt::registry _registry;
 		std::vector<entt::sparse_set> _tags{};

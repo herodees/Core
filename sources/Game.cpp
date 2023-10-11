@@ -57,6 +57,9 @@ namespace box
 
 			auto sz = _scene.view("tst", "flg");
 
+			auto v = _scene.registry().view<str, flag>();
+
+
 			while (!ray::WindowShouldClose())
 			{
 				Recti scissor(100, 100, 1000, 1000);

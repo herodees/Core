@@ -5,6 +5,7 @@
 #include <string_view>
 #include <atomic>
 #include <charconv>
+#include "Export.hpp"
 #include "Var.hpp"
 #include "Vec.hpp"
 #include "Rect.hpp"
