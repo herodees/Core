@@ -51,14 +51,22 @@ namespace box
 		{
 			auto tex = _assets.load_texture(ASSETS_PATH"test.png");
 
-			auto eid = _scene.create();
-			str* comp = static_cast<str*>(_scene.emplace(eid, "tst"));
-		//	_scene.emplace(eid, "flg");
+			auto eid1 = _scene.create();
+			auto eid2 = _scene.create();
+			auto eid3 = _scene.create();
+
+			str* comp = static_cast<str*>(_scene.emplace(eid1, "tst"));
+			_scene.emplace(eid1, "flg");
+			_scene.emplace(eid2, "flg");
+			_scene.emplace(eid3, "tst");
+			_scene.emplace(eid3, "flg");
 
 			auto sz = _scene.view("tst", "flg");
 
-			auto v = _scene.registry().view<str, flag>();
-
+			for (EntityId id : sz)
+			{
+				id = id;
+			}
 
 			while (!ray::WindowShouldClose())
 			{

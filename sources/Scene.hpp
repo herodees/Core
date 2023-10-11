@@ -30,6 +30,7 @@ namespace box
 		IComponent* emplace(EntityId id, std::string_view component) override;
 		void remove(EntityId id, std::string_view component) override;
 		bool contains(EntityId id, std::string_view component) const override;
+		bool contains(EntityId id, const Storage** storage, size_t count) const override;
 		void patch(EntityId id, std::string_view component) override;
 		void add_tag(EntityId id, TagId tag) override;
 		void remove_tag(EntityId id, TagId tag) override;

@@ -84,6 +84,17 @@ namespace box
 		return false;
 	}
 
+	bool Scene::contains(EntityId id, const Storage** storage, size_t count) const
+	{
+		const entt::sparse_set** sets = reinterpret_cast<const entt::sparse_set**>(storage);
+		for (size_t n = 0; n < count; ++n)
+		{
+			if (!sets[n]->contains((entt::entity)id))
+				return false;
+		}
+		return true;
+	}
+
 	void Scene::patch(EntityId id, std::string_view component)
 	{
 		if (auto* cmp = ComponentDefinition::find(component))
