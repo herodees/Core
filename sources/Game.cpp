@@ -53,7 +53,9 @@ namespace box
 
 			auto eid = _scene.create();
 			str* comp = static_cast<str*>(_scene.emplace(eid, "tst"));
-			_scene.emplace(eid, "flg");
+		//	_scene.emplace(eid, "flg");
+
+			auto sz = _scene.view("tst", "flg");
 
 			while (!ray::WindowShouldClose())
 			{

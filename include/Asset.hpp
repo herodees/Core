@@ -50,6 +50,7 @@ namespace box
 		const Vec2i& size() const { return _size; }
 		uint32_t handle() const { return _id; }
 		int32_t get_format() const { return _format; }
+		int32_t get_mipmaps() const { return _mipmaps; }
 		virtual void set_filter(uint32_t filter) = 0;
 		virtual void set_wrap(uint32_t wrap) = 0;
 		virtual void generate_mipmap() = 0;

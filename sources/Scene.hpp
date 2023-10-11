@@ -31,12 +31,18 @@ namespace box
 		void remove(EntityId id, std::string_view component) override;
 		bool contains(EntityId id, std::string_view component) const override;
 		void patch(EntityId id, std::string_view component) override;
+		void add_tag(EntityId id, TagId tag) override;
+		void remove_tag(EntityId id, TagId tag) override;
+		bool contains_tag(EntityId id, TagId tag) const override;
+		bool get_view(View<1>* target, const TagId* tags, size_t count) const override;
+		bool get_view(View<1>* target, const std::string_view* components, size_t count) const override;
 
 		template <typename C>
 		const ComponentDefinition* register_component(std::string_view name, std::string_view id);
 
 	private:
 		entt::registry _registry;
+		std::vector<entt::sparse_set> _tags{};
 	};
 
 
