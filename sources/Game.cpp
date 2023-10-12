@@ -7,11 +7,11 @@
 
 namespace box
 {
-    struct str : Component<str>
+    struct str : component_for_t<str>
     {
         std::string _str{"test"};
     };
-    struct flag : Component<flag>
+    struct flag : component_for_t<flag>
     {
     };
 
@@ -33,7 +33,7 @@ namespace box
         return _assets;
     }
 
-    IScene& game_impl::get_scene()
+    scene& game_impl::get_scene()
     {
         return _scene;
     }
@@ -68,7 +68,7 @@ namespace box
 
 			auto sz = _scene.view("tst", "flg");
 
-			for (EntityId id : sz)
+			for (entity_id id : sz)
 			{
 				id = id;
 			}
@@ -138,7 +138,7 @@ namespace box
 
         auto nfo1 = _scene.register_component<str>("test","tst");
         auto nfo2 = _scene.register_component<flag>("flag","flg");
-        auto nfo3 = Component<str>::definition;
+        auto nfo3 = component_for_t<str>::definition;
 
     }
 

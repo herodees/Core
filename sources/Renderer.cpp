@@ -219,12 +219,12 @@ namespace box
 
 	bool material_impl::save(const char* path)
 	{
-		msg::Var var;
-		var.set_item("fragment", std::string_view(_fragment));
-		var.set_item("vertex", std::string_view(_vertex));
-		var.set_item("blend", (int32_t)_blend_mode);
+		var doc;
+		doc.set_item("fragment", std::string_view(_fragment));
+		doc.set_item("vertex", std::string_view(_vertex));
+		doc.set_item("blend", (int32_t)_blend_mode);
 		std::string out;
-		var.to_string(out);
+		doc.to_string(out);
 
 		return ray::SaveFileData(path, out.data(), out.size() + 1);;
 	}
@@ -236,15 +236,15 @@ namespace box
 		if (!data)
 			return false;
 
-		msg::Var var;
-		auto ret = var.from_string((const char*)data);
+		var doc;
+		auto ret = doc.from_string((const char*)data);
 		ray::UnloadFileData(data);
-		if (ret != msg::ok)
+        if (ret != var_error::ok)
 			return false;
 
-		_fragment.assign(var.get_item("fragment").str());
-		_vertex.assign(var.get_item("vertex").str());
-		_blend_mode = (blend_mode)var.get_item("blend").get(0);
+		_fragment.assign(doc.get_item("fragment").str());
+		_vertex.assign(doc.get_item("vertex").str());
+		_blend_mode = (blend_mode)doc.get_item("blend").get(0);
 
 		return compile();
 	}

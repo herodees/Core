@@ -4,42 +4,42 @@
 
 namespace box
 {
-	struct ComponentDefinition
+	struct component_definition
 	{
 		std::string id;
 		std::string name;
 		entt::registry::base_type* storage;
 
-		static ComponentDefinition* create(std::string_view id, std::string_view name, entt::registry::base_type* str);
-		static ComponentDefinition* find(std::string_view id);
+		static component_definition* create(std::string_view id, std::string_view name, entt::registry::base_type* str);
+		static component_definition* find(std::string_view id);
 	};
 
 
 
-	class Scene : public IScene
+	class scene_impl : public scene
 	{
 	public:
-		Scene();
-		~Scene() override;
+		scene_impl();
+		~scene_impl() override;
 
 		void init();
 
-		EntityId create() override;
-		void release(EntityId id) override;
-		bool is_valid(EntityId id) const override;
-		component* emplace(EntityId id, std::string_view component) override;
-		void remove(EntityId id, std::string_view component) override;
-		bool contains(EntityId id, std::string_view component) const override;
-		bool contains(EntityId id, const Storage** storage, size_t count) const override;
-		void patch(EntityId id, std::string_view component) override;
-		void add_tag(EntityId id, TagId tag) override;
-		void remove_tag(EntityId id, TagId tag) override;
-		bool contains_tag(EntityId id, TagId tag) const override;
-		bool get_view(View<1>* target, const TagId* tags, size_t count) const override;
-		bool get_view(View<1>* target, const std::string_view* components, size_t count) const override;
+		entity_id create() override;
+		void release(entity_id id) override;
+		bool is_valid(entity_id id) const override;
+		component* emplace(entity_id id, std::string_view component) override;
+		void remove(entity_id id, std::string_view component) override;
+		bool contains(entity_id id, std::string_view component) const override;
+		bool contains(entity_id id, const Storage** storage, size_t count) const override;
+		void patch(entity_id id, std::string_view component) override;
+		void add_tag(entity_id id, tag_id tag) override;
+		void remove_tag(entity_id id, tag_id tag) override;
+		bool contains_tag(entity_id id, tag_id tag) const override;
+		bool get_view(scene_view<1>* target, const tag_id* tags, size_t count) const override;
+		bool get_view(scene_view<1>* target, const std::string_view* components, size_t count) const override;
 
 		template <typename C>
-		const ComponentDefinition* register_component(std::string_view name, std::string_view id);
+		const component_definition* register_component(std::string_view name, std::string_view id);
 
 		entt::registry& registry() { return _registry; }
 
@@ -51,48 +51,48 @@ namespace box
 
 
 	template <typename T>
-	struct Component : component
+	struct component_for_t : component
 	{
-		static const ComponentDefinition* definition;
+		static const component_definition* definition;
 
-		static bool contains(EntityId id);
-		static void patch(EntityId id);
-		static void remove(EntityId id);
-		static T* emplace(EntityId id);
+		static bool contains(entity_id id);
+		static void patch(entity_id id);
+		static void remove(entity_id id);
+		static T* emplace(entity_id id);
 	};
 
 
 
-	template <typename T> const ComponentDefinition* Component<T>::definition = nullptr;
+	template <typename T> const component_definition* component_for_t<T>::definition = nullptr;
 
 	template<typename C>
-	inline const ComponentDefinition* Scene::register_component(std::string_view name, std::string_view id)
+	inline const component_definition* scene_impl::register_component(std::string_view name, std::string_view id)
 	{
-		C::definition = ComponentDefinition::create(id, name, &_registry.storage<C>());
+		C::definition = component_definition::create(id, name, &_registry.storage<C>());
 		return C::definition;
 	}
 
 	template<typename T>
-	inline bool Component<T>::contains(EntityId id)
+	inline bool component_for_t<T>::contains(entity_id id)
 	{
-		return Component<T>::definition->storage->contains((entt::entity)id);
+		return component_for_t<T>::definition->storage->contains((entt::entity)id);
 	}
 
 	template<typename T>
-	inline void Component<T>::patch(EntityId id)
+	inline void component_for_t<T>::patch(entity_id id)
 	{
-		static_cast<entt::storage_for_t<T>*>(Component<T>::definition->storage)->patch((entt::entity)id);
+		static_cast<entt::storage_for_t<T>*>(component_for_t<T>::definition->storage)->patch((entt::entity)id);
 	}
 
 	template<typename T>
-	inline void Component<T>::remove(EntityId id)
+	inline void component_for_t<T>::remove(entity_id id)
 	{
-		Component<T>::definition->storage->remove((entt::entity)id);
+		component_for_t<T>::definition->storage->remove((entt::entity)id);
 	}
 
 	template<typename T>
-	inline T* Component<T>::emplace(EntityId id)
+	inline T* component_for_t<T>::emplace(entity_id id)
 	{
-		return static_cast<T*>(Component<T>::definition->storage->get((entt::entity)id));
+		return static_cast<T*>(component_for_t<T>::definition->storage->get((entt::entity)id));
 	}
 }

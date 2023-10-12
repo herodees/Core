@@ -2,17 +2,17 @@
 
 namespace box
 {
-	static std::unordered_map<std::string, ComponentDefinition, std::string_hash, std::equal_to<>> s_somponents {};
+	static std::unordered_map<std::string, component_definition, std::string_hash, std::equal_to<>> s_somponents {};
 
-	ComponentDefinition* ComponentDefinition::create(std::string_view id, std::string_view name, entt::registry::base_type* str)
+	component_definition* component_definition::create(std::string_view id, std::string_view name, entt::registry::base_type* str)
 	{
 		auto it = s_somponents.find(id);
 		if(it != s_somponents.end())
 			return &it->second;
-		return &s_somponents.emplace(std::string(id), ComponentDefinition{ std::string(id), std::string(name), str }).first->second;
+		return &s_somponents.emplace(std::string(id), component_definition{ std::string(id), std::string(name), str }).first->second;
 	}
 
-	ComponentDefinition* ComponentDefinition::find(std::string_view id)
+	component_definition* component_definition::find(std::string_view id)
 	{
 		auto it = s_somponents.find(id);
 		if (it == s_somponents.end())
@@ -20,15 +20,15 @@ namespace box
 		return &it->second;
 	}
 
-	Scene::Scene()
+	scene_impl::scene_impl()
 	{
 	}
 
-	Scene::~Scene()
+	scene_impl::~scene_impl()
 	{
 	}
 
-	void Scene::init()
+	void scene_impl::init()
 	{
 		entt::storage_for_t<std::remove_const_t<void>> storage;
 		entt::sparse_set set;
@@ -42,24 +42,24 @@ namespace box
 			val;
 	}
 
-	EntityId Scene::create()
+	entity_id scene_impl::create()
 	{
-		return (EntityId)_registry.create();
+		return (entity_id)_registry.create();
 	}
 
-	void Scene::release(EntityId id)
+	void scene_impl::release(entity_id id)
 	{
 		_registry.destroy((entt::entity)id);
 	}
 
-	bool Scene::is_valid(EntityId id) const
+	bool scene_impl::is_valid(entity_id id) const
 	{
 		return _registry.valid((entt::entity)id);
 	}
 
-	component* Scene::emplace(EntityId id, std::string_view cmp_id)
+	component* scene_impl::emplace(entity_id id, std::string_view cmp_id)
 	{
-		if (auto* cmp = ComponentDefinition::find(cmp_id))
+		if (auto* cmp = component_definition::find(cmp_id))
 		{
 			cmp->storage->emplace((entt::entity)id);
 			return static_cast<component*>(cmp->storage->get((entt::entity)id));
@@ -67,25 +67,24 @@ namespace box
 		return nullptr;
 	}
 
-	void Scene::remove(EntityId id, std::string_view cmp_id)
+	void scene_impl::remove(entity_id id, std::string_view cmp_id)
 	{
-		if (auto* cmp = ComponentDefinition::find(cmp_id))
+		if (auto* cmp = component_definition::find(cmp_id))
 		{
 			cmp->storage->remove((entt::entity)id);
 		}
 	}
 
-	bool Scene::contains(EntityId id, std::string_view cmp_id) const
+	bool scene_impl::contains(entity_id id, std::string_view cmp_id) const
 	{
-		if (auto* cmp = ComponentDefinition::find(cmp_id))
+		if (auto* cmp = component_definition::find(cmp_id))
 		{
 			return cmp->storage->contains((entt::entity)id);
 		}
 		return false;
 	}
 
-<<<<<<< HEAD
-	bool Scene::contains(EntityId id, const Storage** storage, size_t count) const
+	bool scene_impl::contains(entity_id id, const Storage** storage, size_t count) const
 	{
 		const entt::sparse_set** sets = reinterpret_cast<const entt::sparse_set**>(storage);
 		for (size_t n = 0; n < count; ++n)
@@ -96,61 +95,56 @@ namespace box
 		return true;
 	}
 
-	void Scene::patch(EntityId id, std::string_view component)
-=======
-	void Scene::patch(EntityId id, std::string_view cmp_id)
->>>>>>> 50a6a12781b478d07bc57849f67735a89f083beb
+	void scene_impl::patch(entity_id id, std::string_view cmp_id)
 	{
-		if (auto* cmp = ComponentDefinition::find(cmp_id))
+		if (auto* cmp = component_definition::find(cmp_id))
 		{
 			static_cast<entt::storage_for_t<component>*>(cmp->storage)->patch((entt::entity)id);
 		}
 	}
 
-	void Scene::add_tag(EntityId id, TagId tag)
+	void scene_impl::add_tag(entity_id id, tag_id tag)
 	{
 		if (_tags.size() <= tag)
 			_tags.resize(tag + 1);
 		_tags[tag].emplace((entt::entity)id);
 	}
 
-	void Scene::remove_tag(EntityId id, TagId tag)
+	void scene_impl::remove_tag(entity_id id, tag_id tag)
 	{
 		if (_tags.size() <= tag)
 			return;
 		_tags[tag].remove((entt::entity)id);
 	}
 
-	bool Scene::contains_tag(EntityId id, TagId tag) const
+	bool scene_impl::contains_tag(entity_id id, tag_id tag) const
 	{
 		if (_tags.size() <= tag)
 			return false;
 		return _tags[tag].contains((entt::entity)id);
 	}
 
-	bool Scene::get_view(View<1>* target, const TagId* tags, size_t count) const
+	bool scene_impl::get_view(scene_view<1>* target, const tag_id* tags, size_t count) const
 	{
 		for (size_t n = 0; n < count; ++n)
 		{
 			if (_tags.size() <= tags[n])
 			{
-				target->size = 0;
+				target->_size = 0;
 				return false;
 			}
 			target->_storage[n] = &_tags[n];
 		}
-
-
 		return true;
 	}
 
-	bool Scene::get_view(View<1>* target, const std::string_view* components, size_t count) const
+	bool scene_impl::get_view(scene_view<1>* target, const std::string_view* components, size_t count) const
 	{
-		View<0xff>& out = (View<0xff>&)*target;
-		out._scene = const_cast<Scene*>(this);
+		scene_view<0xff>& out = (scene_view<0xff>&)*target;
+		out._scene = const_cast<scene_impl*>(this);
 		for (size_t n = 0; n < count; ++n)
 		{
-			if (auto* cmp = ComponentDefinition::find(components[n]))
+			if (auto* cmp = component_definition::find(components[n]))
 			{
 				out._storage[n] = cmp->storage;
 			}
@@ -175,8 +169,8 @@ namespace box
 		}
 
 		const entt::sparse_set* a = (entt::sparse_set*)out._storage[0];
-		out.size = a->size();
-		out.data = (EntityId*)a->data();
+		out._size = a->size();
+		out._data = (entity_id*)a->data();
 		return true;
 	}
 

@@ -2,31 +2,34 @@
 
 namespace box
 {
-	struct vertex;
-	class asset_provider;
-	class texture;
-	class material;
-	class prototype;
-	class sound;
-	class plugin;
-	class renderer;
-	class IScene;
-	class Entity;
-	enum class blend_mode;
-	enum class uniform_type;
-}
+    struct vertex;
+    class asset_provider;
+    class texture;
+    class material;
+    class prototype;
+    class sound;
+    class plugin;
+    class renderer;
+    class scene;
+    class entity;
+    enum class blend_mode;
+    enum class uniform_type;
+} // namespace box
 
-#include <cstdint>
-#include <cmath>
-#include <string_view>
 #include <atomic>
 #include <charconv>
+#include <string_view>
+#include <cmath>
+#include <cstdint>
+
+#include "Asset.hpp"
+#include "Components.hpp"
 #include "Export.hpp"
-#include "Var.hpp"
-#include "Vec.hpp"
+#include "Game.hpp"
+#include "Graphics.hpp"
 #include "Rect.hpp"
 #include "Scene.hpp"
-#include "Graphics.hpp"
-#include "Components.hpp"
-#include "Asset.hpp"
-#include "Game.hpp"
+#include "Var.hpp"
+#include "Vec.hpp"
+
+
