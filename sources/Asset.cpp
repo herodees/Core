@@ -3,36 +3,36 @@
 
 namespace box
 {
-	AssetProvider::AssetProvider()
+	asset_provider_impl::asset_provider_impl()
 	{
 	}
 
-	AssetProvider::~AssetProvider()
+	asset_provider_impl::~asset_provider_impl()
 	{
 	}
 
-	void AssetProvider::init(Renderer* renderer)
+	void asset_provider_impl::init(renderer_impl* renderer)
 	{
 		_renderer = renderer;
 	}
 
-	AssetRef<ITexture> AssetProvider::load_texture(const char* path)
+	asset_ref<texture> asset_provider_impl::load_texture(const char* path)
 	{
 		return _renderer->load_texture(path);
 	}
 
-	AssetRef<IMaterial> AssetProvider::load_material(const char* path)
+	asset_ref<material> asset_provider_impl::load_material(const char* path)
 	{
 		return _renderer->load_material(path);
 	}
 
-	AssetRef<ISound> AssetProvider::load_sound(const char* path)
+	asset_ref<sound> asset_provider_impl::load_sound(const char* path)
 	{
-		return AssetRef<ISound>();
+		return asset_ref<sound>();
 	}
 
-	AssetRef<IPrototype> AssetProvider::load_prototype(const char* path)
+	asset_ref<prototype> asset_provider_impl::load_prototype(const char* path)
 	{
-		return AssetRef<IPrototype>();
+		return asset_ref<prototype>();
 	}
 }

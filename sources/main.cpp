@@ -3,6 +3,6 @@
 
 int main(int c, const char* v[]) 
 {
-    box::Game app;
+    box::game_impl app;
     return app.run(v, c);
 }

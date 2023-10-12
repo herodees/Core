@@ -4,52 +4,52 @@
 namespace box
 {
 
-	Renderer::Renderer()
+	renderer_impl::renderer_impl()
 		: _default(this)
 	{
 	}
 
-	Renderer::~Renderer()
+	renderer_impl::~renderer_impl()
 	{
 	}
 
-	void Renderer::init()
+	void renderer_impl::init()
 	{
 	}
 
-	void Renderer::deinit()
+	void renderer_impl::deinit()
 	{
 	}
 
-	void Renderer::clear_background(Color c)
+	void renderer_impl::clear_background(color c)
 	{
 		ray::ClearBackground((ray::Color&)c);
 
 		ray::Camera2D cam;
 	}
 
-	Texture* Renderer::load_texture(const char* path)
+	texture_impl* renderer_impl::load_texture(const char* path)
 	{
-		auto ret = new Texture(this);
+		auto ret = new texture_impl(this);
 		ret->load(path);
 		return ret;
 	}
 
-	Material* Renderer::load_material(const char* path)
+	material_impl* renderer_impl::load_material(const char* path)
 	{
-		auto ret = new Material(this);
+		auto ret = new material_impl(this);
 		ret->load(path);
 		return ret;
 	}
 
-	IRenderTexture* Renderer::load_render_texture(uint32_t width, uint32_t height, bool depth)
+	render_texture* renderer_impl::load_render_texture(uint32_t width, uint32_t height, bool depth)
 	{
-		auto ret = new RenderTexture(this);
+		auto ret = new render_texture_impl(this);
 		ret->create(width, height, depth);
 		return ret;
 	}
 
-	bool Renderer::begin_2d(const Camera& cam, bool depthsort)
+	bool renderer_impl::begin_2d(const camera& cam, bool depthsort)
 	{
 		_command.vertex_size = 0;
 		_command.vertex = 0;
@@ -74,16 +74,16 @@ namespace box
 		return true;
 	}
 
-	void Renderer::end_2d()
+	void renderer_impl::end_2d()
 	{
-		newCommand();
+		new_command();
 
 		if (_depthsort)
 		{
 			std::sort(std::execution::seq,
 				_commands.begin(),
 				_commands.end(),
-				[](const Command& a, const Command& b)
+				[](const command& a, const command& b)
 				{
 					return a.depth < b.depth;
 				});
@@ -110,12 +110,12 @@ namespace box
 	}
 
 
-	void Renderer::enable_scissor_test(const Recti& scissor)
+	void renderer_impl::enable_scissor_test(const Recti& scissor)
 	{
 		ray::BeginScissorMode(scissor.min.x, scissor.min.y, scissor.width(), scissor.height());
 	}
 
-	void Renderer::enable_render_texture(const IRenderTexture* rt)
+	void renderer_impl::enable_render_texture(const render_texture* rt)
 	{
 		if (_target == rt)
 			return;
@@ -124,7 +124,7 @@ namespace box
 
 		if (_target)
 		{
-			ray::BeginTextureMode(static_cast<const RenderTexture*>(_target)->get());
+			ray::BeginTextureMode(static_cast<const render_texture_impl*>(_target)->get());
 		}
 		else
 		{
@@ -132,7 +132,7 @@ namespace box
 		}
 	}
 
-	void Renderer::set_material(IMaterial* material)
+	void renderer_impl::set_material(material* material)
 	{
 		if (!_depthsort)
 		{
@@ -140,12 +140,12 @@ namespace box
 		}
 		else if (_command.material != material)
 		{
-			newCommand();
+			new_command();
 			_command.material = material;
 		}
 	}
 
-	void Renderer::set_texture(const ITexture* texture)
+	void renderer_impl::set_texture(const texture* texture)
 	{
 		if (!_depthsort)
 		{
@@ -154,39 +154,39 @@ namespace box
 		}
 		else if (_command.texture != texture)
 		{
-			newCommand();
+			new_command();
 			_command.texture = texture;
 		}
 	}
 
-	void Renderer::set_depth(uint32_t depth)
+	void renderer_impl::set_depth(uint32_t depth)
 	{
 		if (!_depthsort)
 		{
 		}
 		else if (_command.depth != depth)
 		{
-			newCommand();
+			new_command();
 			_command.depth = depth;
 		}
 	}
 
-	IMaterial* Renderer::get_default_material()
+	material* renderer_impl::get_default_material()
 	{
 		return &_default;
 	}
 
-	IMaterial* Renderer::get_material()
+	material* renderer_impl::get_material()
 	{
 		return _command.material;
 	}
 
-	Mesh Renderer::begin_mesh(uint32_t vertex)
+	mesh renderer_impl::begin_mesh(uint32_t vertex)
 	{
-		return Mesh{ &_verts[_command.vertex + _command.vertex_size], 0 };
+		return mesh{ &_verts[_command.vertex + _command.vertex_size], 0 };
 	}
 
-	void Renderer::end_mesh(const Mesh& mesh)
+	void renderer_impl::end_mesh(const mesh& mesh)
 	{
 		if (_depthsort)
 		{
@@ -201,7 +201,7 @@ namespace box
 		}
 	}
 
-	void Renderer::newCommand()
+	void renderer_impl::new_command()
 	{
 		if (_command.vertex_size)
 		{
@@ -211,13 +211,13 @@ namespace box
 		}
 	}
 	
-	Material::Material(Renderer* r)
+	material_impl::material_impl(renderer_impl* r)
 		: _renderer{r},
 		_shader{ ray::rlGetShaderIdDefault(), ray::rlGetShaderLocsDefault() }
 	{
 	}
 
-	bool Material::save(const char* path)
+	bool material_impl::save(const char* path)
 	{
 		msg::Var var;
 		var.set_item("fragment", std::string_view(_fragment));
@@ -229,7 +229,7 @@ namespace box
 		return ray::SaveFileData(path, out.data(), out.size() + 1);;
 	}
 
-	bool Material::load(const char* path)
+	bool material_impl::load(const char* path)
 	{
 		int32_t size{};
 		auto* data = ray::LoadFileData(path, &size);
@@ -244,12 +244,12 @@ namespace box
 
 		_fragment.assign(var.get_item("fragment").str());
 		_vertex.assign(var.get_item("vertex").str());
-		_blend_mode = (BlendMode)var.get_item("blend").get(0);
+		_blend_mode = (blend_mode)var.get_item("blend").get(0);
 
 		return compile();
 	}
 
-	void Material::bind(bool activate)
+	void material_impl::bind(bool activate)
 	{
 		if(activate)
 			ray::rlSetShader(_shader.id, _shader.locs);
@@ -257,7 +257,7 @@ namespace box
 			ray::rlSetShader(ray::rlGetShaderIdDefault(), ray::rlGetShaderLocsDefault());
 	}
 
-	void Material::draw(const Vertex* vtx, size_t size)
+	void material_impl::draw(const vertex* vtx, size_t size)
 	{
 		if (ray::rlCheckRenderBatchLimit(size))
 		{
@@ -275,34 +275,34 @@ namespace box
 		}
 	}
 
-	void Material::set_shader(const char* vs, const char* fs)
+	void material_impl::set_shader(const char* vs, const char* fs)
 	{
 		if (_shader.id)
 			ray::UnloadShader(_shader);
 		_shader = ray::LoadShaderFromMemory(vs, fs);
 	}
 
-	void Material::set_blend_mode(BlendMode blend)
+	void material_impl::set_blend_mode(blend_mode blend)
 	{
 		_blend_mode = blend;
 	}
 
-	void Material::set_texture(uint32_t loc, const ITexture* texture)
+	void material_impl::set_texture(uint32_t loc, const texture* texture)
 	{
 
 	}
 
-	void Material::set_uniform(uint32_t loc, const void* data, uint32_t count, UniformType type)
+	void material_impl::set_uniform(uint32_t loc, const void* data, uint32_t count, uniform_type type)
 	{
 		ray::rlSetUniform(loc, data, (int32_t)type, count);
 	}
 
-	uint32_t Material::get_location(const char* name) const
+	uint32_t material_impl::get_location(const char* name) const
 	{
 		return ray::rlGetLocationAttrib(_shader.id, name);
 	}
 
-	bool Material::compile()
+	bool material_impl::compile()
 	{
 		if (_shader.id)
 		{
@@ -312,18 +312,18 @@ namespace box
 		return !!_shader.id;
 	}
 
-	Texture::Texture(Renderer* r)
+	texture_impl::texture_impl(renderer_impl* r)
 		: _renderer(r)
 	{
 	}
 
-	Texture::~Texture()
+	texture_impl::~texture_impl()
 	{
 		if(_id)
 			ray::rlUnloadTexture(_id);
 	}
 
-	void Texture::attach(const ray::Texture& txt)
+	void texture_impl::attach(const ray::Texture& txt)
 	{
 		if (_id)
 			ray::rlUnloadTexture(_id);
@@ -334,17 +334,17 @@ namespace box
 		_format = txt.format;
 	}
 
-	void Texture::set_filter(uint32_t filter)
+	void texture_impl::set_filter(uint32_t filter)
 	{
 		ray::SetTextureFilter({ _id }, filter);
 	}
 
-	void Texture::set_wrap(uint32_t wrap)
+	void texture_impl::set_wrap(uint32_t wrap)
 	{
 		ray::SetTextureWrap({ _id }, wrap);
 	}
 
-	void Texture::generate_mipmap()
+	void texture_impl::generate_mipmap()
 	{
 		ray::Texture txt;
 		txt.id = _id;
@@ -356,12 +356,12 @@ namespace box
 		_mipmaps = txt.mipmaps;
 	}
 
-	bool Texture::save(const char* path)
+	bool texture_impl::save(const char* path)
 	{
 		return false;
 	}
 
-	bool Texture::load(const char* path)
+	bool texture_impl::load(const char* path)
 	{
 		std::string_view str(path);
 		std::string_view ext = str.substr(str.rfind('.'));
@@ -380,7 +380,7 @@ namespace box
 		return !!_id;
 	}
 
-	ray::Texture Texture::get() const
+	ray::Texture texture_impl::get() const
 	{
 		ray::Texture out;
 		out.id = _id;
@@ -392,26 +392,26 @@ namespace box
 	}
 
 
-	RenderTexture::RenderTexture(Renderer* r) :
+	render_texture_impl::render_texture_impl(renderer_impl* r) :
 		_texture(r), _depth(r)
 	{
 	}
 
-	RenderTexture::~RenderTexture()
+	render_texture_impl::~render_texture_impl()
 	{
 	}
 
-	const ITexture& RenderTexture::get_texture() const
+	const texture& render_texture_impl::get_texture() const
 	{
 		return _texture;
 	}
 
-	const ITexture& RenderTexture::get_depth() const
+	const texture& render_texture_impl::get_depth() const
 	{
 		return _depth;
 	}
 
-	ray::RenderTexture RenderTexture::get() const
+	ray::RenderTexture render_texture_impl::get() const
 	{
 		ray::RenderTexture out;
 		out.id = _id;
@@ -420,7 +420,7 @@ namespace box
 		return out;
 	}
 
-	bool RenderTexture::create(uint32_t width, uint32_t height, bool depth)
+	bool render_texture_impl::create(uint32_t width, uint32_t height, bool depth)
 	{
 		_id = ray::rlLoadFramebuffer(width, height);   // Load an empty framebuffer
 

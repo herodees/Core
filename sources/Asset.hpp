@@ -4,22 +4,22 @@
 
 namespace box
 {
-	class Renderer;
+	class renderer_impl;
 
-	class AssetProvider : public IAssetProvider
+	class asset_provider_impl : public asset_provider
 	{
 	public:
-		AssetProvider();
-		~AssetProvider() override;
+		asset_provider_impl();
+		~asset_provider_impl() override;
 
-		void init(Renderer* renderer);
+		void init(renderer_impl* renderer);
 
-		AssetRef<ITexture> load_texture(const char* path) override;
-		AssetRef<IMaterial> load_material(const char* path) override;
-		AssetRef<ISound> load_sound(const char* path) override;
-		AssetRef<IPrototype> load_prototype(const char* path) override;
+		asset_ref<texture> load_texture(const char* path) override;
+		asset_ref<material> load_material(const char* path) override;
+		asset_ref<sound> load_sound(const char* path) override;
+		asset_ref<prototype> load_prototype(const char* path) override;
 
 	private:
-		Renderer* _renderer{};
+		renderer_impl* _renderer{};
 	};
 }

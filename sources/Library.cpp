@@ -9,29 +9,62 @@
 #error define your copiler
 #endif
 
+
+#define RTLD_LAZY   1
+#define RTLD_NOW    2
+#define RTLD_GLOBAL 4
+
+
 namespace box
 {
-	Library::Library()
+	game_plugin::game_plugin()
 	{
 	}
 
-	Library::Library(Library&& c)
+	game_plugin::game_plugin(game_plugin&& c)
 	{
 		std::swap(_lib, c._lib);
 	}
 
-	Library::~Library()
+	game_plugin::~game_plugin()
 	{
 		clear();
 	}
 
-	Library& Library::operator=(Library&& c)
+	game_plugin& game_plugin::operator=(game_plugin&& c)
 	{
 		std::swap(_lib, c._lib);
 		return *this;
 	}
 
-	void* Library::get_function(const char* function)
+	bool game_plugin::load(const char* name)
+	{
+		if(!load(name, RTLD_NOW))
+			return false;
+
+		_main = (plugin_main)get_function("plugin_main");
+		return _main;
+	}
+
+	bool game_plugin::is_loaded() const
+	{
+		return _lib && _main;
+	}
+
+	plugin* game_plugin::create(game* g)
+	{
+		if (!_main)
+			return nullptr;
+		_plugin = _main(g);
+		return _plugin;
+	}
+
+	plugin* game_plugin::get()
+	{
+		return _plugin;
+	}
+
+	void* game_plugin::get_function(const char* function)
 	{
 		if (!_lib)
 			return nullptr;
@@ -42,21 +75,21 @@ namespace box
 #endif
 	}
 
-	void* Library::load(const char* name, int imode)
+	void* game_plugin::load(const char* name, int imode)
 	{
 		clear();
-		std::string sDllName = name;
+		std::string dllname = name;
 #if defined(_MSC_VER) // Microsoft compiler
-		sDllName += ".dll";
+		dllname += ".dll";
 		_lib = (void*)LoadLibrary(name);
 #elif defined(__GNUC__) // GNU compiler
-		sDllName += ".so";
-		_lib =  dlopen(sDllName.c_str(), iMode);
+		dllname += ".so";
+		_lib =  dlopen(dllname.c_str(), imode);
 #endif
 		return _lib;
 	}
 
-	void Library::clear()
+	void game_plugin::clear()
 	{
 		if (!_lib)
 			return;

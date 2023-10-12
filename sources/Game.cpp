@@ -15,30 +15,35 @@ namespace box
     {
     };
 
-	Game::Game()
+	game_impl::game_impl()
 	{
 	}
 
-	Game::~Game()
+	game_impl::~game_impl()
 	{
 	}
 
-    IRenderer& Game::renderer()
+    renderer& game_impl::get_renderer()
     {
         return _renderer;
     }
 
-    IAssetProvider& Game::asset()
+    asset_provider& game_impl::get_asset()
     {
         return _assets;
     }
 
-    IScene& Game::scene()
+    IScene& game_impl::get_scene()
     {
         return _scene;
     }
 
-    int32_t Game::run(const char* v[], int32_t c)
+	plugin* game_impl::get_main()
+	{
+		return _main;
+	}
+
+    int32_t game_impl::run(const char* v[], int32_t c)
 	{
         ray::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
         ray::SetTargetFPS(60);
@@ -74,7 +79,7 @@ namespace box
 
 				ray::BeginDrawing();
 				_renderer.clear_background({ 255,255,255,255 });
-				_renderer.begin_2d(Camera(), false);
+				_renderer.begin_2d(camera(), false);
 				_renderer.enable_scissor_test(scissor);
 
 				auto draw = [&](Vec2f pos, uint32_t d)
@@ -127,7 +132,7 @@ namespace box
         return 0;
 	}
 
-    void Game::init(const char* v[], int32_t c)
+    void game_impl::init(const char* v[], int32_t c)
     {
 
 

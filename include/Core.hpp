@@ -1,5 +1,21 @@
 #pragma once
 
+namespace box
+{
+	struct vertex;
+	class asset_provider;
+	class texture;
+	class material;
+	class prototype;
+	class sound;
+	class plugin;
+	class renderer;
+	class IScene;
+	class Entity;
+	enum class blend_mode;
+	enum class uniform_type;
+}
+
 #include <cstdint>
 #include <cmath>
 #include <string_view>

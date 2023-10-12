@@ -4,40 +4,41 @@
 
 namespace box
 {
-	class Renderer;
+	class renderer_impl;
 
-	class Material : public IMaterial
+	class material_impl : public material
 	{
 	public:
-		Material(Renderer* r);
-		~Material() override = default;
+		material_impl(renderer_impl* r);
+		~material_impl() override = default;
 
 		bool save(const char* path) override;
 		bool load(const char* path) override;
 		void bind(bool activate) override;
-		void draw(const Vertex* vtx, size_t size) override;
+		void draw(const vertex* vtx, size_t size) override;
 		void set_shader(const char* vs, const char* fs) override;
-		void set_blend_mode(BlendMode blend) override;
-		void set_texture(uint32_t loc, const ITexture* texture) override;
-		void set_uniform(uint32_t loc, const void* data, uint32_t count, UniformType type) override;
+		void set_blend_mode(blend_mode blend) override;
+		void set_texture(uint32_t loc, const texture* texture) override;
+		void set_uniform(uint32_t loc, const void* data, uint32_t count, uniform_type type) override;
 		uint32_t get_location(const char* name) const override;
 		bool compile();
 
 	protected:
-		Renderer* _renderer{};
-		BlendMode _blend_mode{ BlendMode::ALPHA };
+		renderer_impl* _renderer{};
+		blend_mode _blend_mode{ blend_mode::ALPHA };
 		ray::Shader _shader{};
 		std::string _fragment;
 		std::string _vertex;
 	};
 
 
-	class Texture : public ITexture
+
+	class texture_impl : public texture
 	{
-		friend class Renderer;
+		friend class renderer_impl;
 	public:
-		Texture(Renderer* r);
-		~Texture() override;
+		texture_impl(renderer_impl* r);
+		~texture_impl() override;
 		void attach(const ray::Texture& txt);
 		void set_filter(uint32_t filter) override;
 		void set_wrap(uint32_t wrap) override;
@@ -48,81 +49,77 @@ namespace box
 		ray::Texture get() const;
 
 	protected:
-		Renderer* _renderer;
+		renderer_impl* _renderer;
 	};
 
 
 
-	class RenderTexture : public IRenderTexture
+	class render_texture_impl : public render_texture
 	{
 	public:
-		RenderTexture(Renderer* r);
-		~RenderTexture() override;
-		const ITexture& get_texture() const override;
-		const ITexture& get_depth() const override;
+		render_texture_impl(renderer_impl* r);
+		~render_texture_impl() override;
+		const texture& get_texture() const override;
+		const texture& get_depth() const override;
 		bool create(uint32_t width, uint32_t height, bool depth = false) override;
 
 		ray::RenderTexture get() const;
 
 	protected:
-		Texture _texture;
-		Texture _depth;
+		texture_impl _texture;
+		texture_impl _depth;
 	};
 
 
 
-	class Renderer final : public IRenderer
+	class renderer_impl final : public renderer
 	{
-		struct Command
+		struct command
 		{
 			uint32_t depth;
 			uint32_t vertex;
 			uint32_t vertex_size;
-			const ITexture* texture;
-			IMaterial* material;
+			const texture* texture;
+			material* material;
 		};
 	public:
-		Renderer();
-		~Renderer() override;
+		renderer_impl();
+		~renderer_impl() override;
 
 		void init();
 		void deinit();
 
-		bool begin_2d(const Camera& cam, bool depthsort) override;
+		bool begin_2d(const camera& cam, bool depthsort) override;
 		void end_2d() override;
 
 		void enable_scissor_test(const Recti& scissor) override;
-		void enable_render_texture(const IRenderTexture* rt) override;
+		void enable_render_texture(const render_texture* rt) override;
 
-		void set_texture(const ITexture* texture) override;
+		void set_texture(const texture* texture) override;
 		void set_depth(uint32_t depth) override;
-		void set_material(IMaterial* material) override;
-		IMaterial* get_default_material() override;
-		IMaterial* get_material() override;
-		Mesh begin_mesh(uint32_t vertex) override;
-		void end_mesh(const Mesh& mesh) override;
+		void set_material(material* material) override;
+		material* get_default_material() override;
+		material* get_material() override;
+		mesh begin_mesh(uint32_t vertex) override;
+		void end_mesh(const mesh& mesh) override;
 
-		void clear_background(Color c) override;
+		void clear_background(color c) override;
 
-		Texture* load_texture(const char* path);
-		Material* load_material(const char* path);
-
-		IRenderTexture* load_render_texture(uint32_t width, uint32_t height, bool depth = false) override;
+		texture_impl* load_texture(const char* path);
+		material_impl* load_material(const char* path);
+		render_texture* load_render_texture(uint32_t width, uint32_t height, bool depth = false) override;
 
 	protected:
-		void newCommand();
+		void new_command();
 
 	private:
-		std::vector<Vertex>  _verts;
-		std::vector<Command> _commands;
-		Command _command{};
+		std::vector<vertex>  _verts;
+		std::vector<command> _commands;
+		command _command{};
 		bool _depthsort{};
-		Camera _camera{};
-		const IRenderTexture* _target{};
-		Material _default;
+		camera _camera{};
+		const render_texture* _target{};
+		material_impl _default;
 	};
-
-
-
 
 }

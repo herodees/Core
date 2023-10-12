@@ -4,26 +4,29 @@
 #include "Renderer.hpp"
 #include "Asset.hpp"
 #include "Scene.hpp"
+#include "Library.hpp"
 
 namespace box
 {
-	class Game : public IGame
+	class game_impl : public game
 	{
 	public:
-		Game();
-		~Game() override;
+		game_impl();
+		~game_impl() override;
 
 		void init(const char* v[], int32_t c);
 
-		IRenderer& renderer() override final;
-		IAssetProvider& asset() override final;
-		IScene& scene() override final;
+		renderer& get_renderer() override final;
+		asset_provider& get_asset() override final;
+		IScene& get_scene() override final;
+		plugin* get_main() override final;
 
 		int32_t run(const char* v[], int32_t c);
 
 	private:
-		Renderer _renderer;
-		AssetProvider _assets;
+		plugin* _main{};
+		renderer_impl _renderer;
+		asset_provider_impl _assets;
 		Scene _scene;
 	};
 }
