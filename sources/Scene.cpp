@@ -57,38 +57,38 @@ namespace box
 		return _registry.valid((entt::entity)id);
 	}
 
-	IComponent* Scene::emplace(EntityId id, std::string_view component)
+	component* Scene::emplace(EntityId id, std::string_view cmp_id)
 	{
-		if (auto* cmp = ComponentDefinition::find(component))
+		if (auto* cmp = ComponentDefinition::find(cmp_id))
 		{
 			cmp->storage->emplace((entt::entity)id);
-			return static_cast<IComponent*>(cmp->storage->get((entt::entity)id));
+			return static_cast<component*>(cmp->storage->get((entt::entity)id));
 		}
 		return nullptr;
 	}
 
-	void Scene::remove(EntityId id, std::string_view component)
+	void Scene::remove(EntityId id, std::string_view cmp_id)
 	{
-		if (auto* cmp = ComponentDefinition::find(component))
+		if (auto* cmp = ComponentDefinition::find(cmp_id))
 		{
 			cmp->storage->remove((entt::entity)id);
 		}
 	}
 
-	bool Scene::contains(EntityId id, std::string_view component) const
+	bool Scene::contains(EntityId id, std::string_view cmp_id) const
 	{
-		if (auto* cmp = ComponentDefinition::find(component))
+		if (auto* cmp = ComponentDefinition::find(cmp_id))
 		{
 			return cmp->storage->contains((entt::entity)id);
 		}
 		return false;
 	}
 
-	void Scene::patch(EntityId id, std::string_view component)
+	void Scene::patch(EntityId id, std::string_view cmp_id)
 	{
-		if (auto* cmp = ComponentDefinition::find(component))
+		if (auto* cmp = ComponentDefinition::find(cmp_id))
 		{
-			static_cast<entt::storage_for_t<IComponent>*>(cmp->storage)->patch((entt::entity)id);
+			static_cast<entt::storage_for_t<component>*>(cmp->storage)->patch((entt::entity)id);
 		}
 	}
 
@@ -141,7 +141,6 @@ namespace box
 			}
 			else
 			{
-				out.size = 0;
 				return false;
 			}
 		}

@@ -6,13 +6,20 @@
 
 namespace box
 {
-	class IGame
+	class game
 	{
 	public:
-		virtual ~IGame() = default;
+		virtual ~game() = default;
 
-		virtual IRenderer& renderer() = 0;
-		virtual IAssetProvider& asset() = 0;
-		virtual IScene& scene() = 0;
+		virtual renderer& get_renderer() = 0;
+		virtual asset_provider& get_asset() = 0;
+		virtual plugin* get_main() = 0;
+		virtual IScene& get_scene() = 0;
+	};
+
+	class plugin
+	{
+	public:
+		virtual ~plugin() = default;
 	};
 }

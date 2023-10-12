@@ -22,3 +22,4 @@
 #endif // !defined(DLIB_EXPORT)
 
 
+// DLIB_EXPORT box::IPlugin* plugin_main(box::IGame* game);

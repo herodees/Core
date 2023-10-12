@@ -2,19 +2,11 @@
 
 namespace box
 {
-	struct Vertex;
-	class IAssetProvider;
-	class ITexture;
-	class IMaterial;
-	class IPrototype;
-	class ISound;
-	enum class BlendMode;
-	enum class UniformType;
 
-	class IAsset
+	class asset
 	{
 	public:
-		virtual ~IAsset() = default;
+		virtual ~asset() = default;
 		virtual bool save(const char* path) = 0;
 		virtual bool load(const char* path) = 0;
 
@@ -28,25 +20,25 @@ namespace box
 
 
 
-	class IMaterial : public IAsset
+	class material : public asset
 	{
 	public:
-		virtual ~IMaterial() = default;
+		virtual ~material() = default;
 		virtual void bind(bool activate) = 0;
-		virtual void draw(const Vertex* vtx, size_t size) = 0;
+		virtual void draw(const vertex* vtx, size_t size) = 0;
 		virtual void set_shader(const char* vs, const char* fs) = 0;
-		virtual void set_blend_mode(BlendMode blend) = 0;
-		virtual void set_texture(uint32_t loc, const ITexture* texture) = 0;
-		virtual void set_uniform(uint32_t loc, const void* data, uint32_t count, UniformType type) = 0;
+		virtual void set_blend_mode(blend_mode blend) = 0;
+		virtual void set_texture(uint32_t loc, const texture* texture) = 0;
+		virtual void set_uniform(uint32_t loc, const void* data, uint32_t count, uniform_type type) = 0;
 		virtual uint32_t get_location(const char* name) const = 0;
 	};
 
 
 
-	class ITexture : public IAsset
+	class texture : public asset
 	{
 	public:
-		virtual ~ITexture() = default;
+		virtual ~texture() = default;
 		const Vec2i& size() const { return _size; }
 		uint32_t handle() const { return _id; }
 		int32_t get_format() const { return _format; }
@@ -64,33 +56,33 @@ namespace box
 
 
 
-	class ISound : public IAsset
+	class sound : public asset
 	{
 	public:
-		virtual ~ISound() = default;
+		virtual ~sound() = default;
 	};
 
 
 
-	class IPrototype : public IAsset
+	class prototype : public asset
 	{
 	public:
-		virtual ~IPrototype() = default;
+		virtual ~prototype() = default;
 	};
 
 
 
 	template <typename AST>
-	class AssetRef
+	class asset_ref
 	{
 	public:
-		AssetRef() = default;
-		AssetRef(AST* a) : _ptr(a) {}
-		AssetRef(const AssetRef<AST>& ref) : _ptr(ref._ptr) { if (_ptr) _ptr->add_ref(); }
-		AssetRef(AssetRef<AST>&& ref) : _ptr(ref._ptr) { ref._ptr = nullptr; }
-		~AssetRef() { reset(); }
-		AssetRef<AST>& operator=(const AssetRef<AST>& c) { if (c._ptr != _ptr) reset(c._ptr); return *this; }
-		AssetRef<AST>& operator=(AssetRef<AST>&& c) { std::swap(_ptr, c._ptr); return *this; }
+		asset_ref() = default;
+		asset_ref(AST* a) : _ptr(a) {}
+		asset_ref(const asset_ref<AST>& ref) : _ptr(ref._ptr) { if (_ptr) _ptr->add_ref(); }
+		asset_ref(asset_ref<AST>&& ref) : _ptr(ref._ptr) { ref._ptr = nullptr; }
+		~asset_ref() { reset(); }
+		asset_ref<AST>& operator=(const asset_ref<AST>& c) { if (c._ptr != _ptr) reset(c._ptr); return *this; }
+		asset_ref<AST>& operator=(asset_ref<AST>&& c) { std::swap(_ptr, c._ptr); return *this; }
 		void reset(AST* ptr = nullptr) { if (_ptr) _ptr->rem_ref(); _ptr=ptr; if (_ptr) _ptr->add_ref(); }
 
 		AST& operator*() { return *_ptr; }
@@ -106,14 +98,14 @@ namespace box
 
 
 
-	class IAssetProvider
+	class asset_provider
 	{
 	public:
-		virtual ~IAssetProvider() = default;
+		virtual ~asset_provider() = default;
 
-		virtual AssetRef<ITexture> load_texture(const char* path) = 0;
-		virtual AssetRef<IMaterial> load_material(const char* path) = 0;
-		virtual AssetRef<ISound> load_sound(const char* path) = 0;
-		virtual AssetRef<IPrototype> load_prototype(const char* path) = 0;
+		virtual asset_ref<texture> load_texture(const char* path) = 0;
+		virtual asset_ref<material> load_material(const char* path) = 0;
+		virtual asset_ref<sound> load_sound(const char* path) = 0;
+		virtual asset_ref<prototype> load_prototype(const char* path) = 0;
 	};
 }

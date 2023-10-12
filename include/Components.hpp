@@ -2,14 +2,14 @@
 
 namespace box
 {
-	struct CTransform : IComponent
+	struct c_transform : component
 	{
 		Vec2f position{};
 		Vec2f scale{1.f, 1.f};
 		float rotation{ 0 };
 	};
 
-	struct CRigidbody : IComponent
+	struct c_rigidbody : component
 	{
 		float mass{};
 		float drag{};
@@ -17,45 +17,45 @@ namespace box
 		bool gravity{};
 	};
 
-	struct CConstantForce: IComponent
+	struct c_constant_force: component
 	{
 		Vec2f force;
 		float torque{};
 	};
 
-	struct CCamera : IComponent
+	struct c_camera : component
 	{
 		uint32_t clear;
-		Color bg_color{0,0,0,255};
+		color bg_color{0,0,0,255};
 		bool msaa{};
 		Rectf viewport{ 0, 0, 1.f, 1.f };
-		IRenderTexture* target{};
+		render_texture* target{};
 	};
 
-	struct CCameraFolower : IComponent
+	struct c_camera_folower : component
 	{
 		Vec2f speed;
 	};
 
-	struct CColider : IComponent
+	struct c_colider : component
 	{
 		bool is_trigger{};
 		Rectf region;
 		Vec2f center;
 	};
 
-	struct CSpriteRenderer : IComponent
+	struct c_sprite_renderer : component
 	{
 		uint32_t sprite{};
-		Color color{ 255,255,255,255 };
-		IMaterial* material{};
+		color color{ 255,255,255,255 };
+		material* material{};
 		bool flip_x{};
 		bool flip_y{};
 		uint32_t sorting_layer{};
 		uint32_t order{};
 	};
 
-	struct CAnimator : IComponent
+	struct c_animator : component
 	{
 		uint32_t animation{};
 		uint32_t animations{};
