@@ -21,5 +21,15 @@ namespace box
     {
     public:
         virtual ~plugin() = default;
+
+        virtual void on_init(game& gme){};
+        virtual void on_deinit(game& gme){};
+
+        virtual void on_frame_begin(game& gme, float delta_time){};
+        virtual void on_frame_end(game& gme){};
+
+        virtual void on_scene_begin(game& gme){};
+        virtual void on_scene_end(game& gme){};
+
     };
 } // namespace box

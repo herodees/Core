@@ -1,5 +1,5 @@
 
-#include "Library.hpp"
+#include "Plugin.hpp"
 
 #if defined(_MSC_VER) // Microsoft compiler
 #include <windows.h>
@@ -80,10 +80,12 @@ namespace box
 		clear();
 		std::string dllname = name;
 #if defined(_MSC_VER) // Microsoft compiler
-		dllname += ".dll";
+        if (dllname.rfind(".dll") == std::string::npos)
+			dllname += ".dll";
 		_lib = (void*)LoadLibrary(name);
 #elif defined(__GNUC__) // GNU compiler
-		dllname += ".so";
+        if (dllname.rfind(".so") == std::string::npos)
+            dllname += ".so";
 		_lib =  dlopen(dllname.c_str(), imode);
 #endif
 		return _lib;

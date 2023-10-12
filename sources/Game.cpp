@@ -40,7 +40,7 @@ namespace box
 
 	plugin* game_impl::get_main()
 	{
-		return _main;
+        return _game_plugin.get();
 	}
 
     int32_t game_impl::run(const char* v[], int32_t c)
@@ -52,6 +52,9 @@ namespace box
         _renderer.init();
         _assets.init(&_renderer);
         _scene.init();
+
+        if (_game_plugin.get())
+            _game_plugin.get()->on_init(*this);
 
 		{
 			auto tex = _assets.load_texture(ASSETS_PATH"test.png");
@@ -75,6 +78,9 @@ namespace box
 
 			while (!ray::WindowShouldClose())
 			{
+                if (_game_plugin.get())
+                    _game_plugin.get()->on_frame_begin(*this, ray::GetFrameTime());
+
 				Recti scissor(100, 100, 1000, 1000);
 
 				ray::BeginDrawing();
@@ -122,9 +128,13 @@ namespace box
 
 				ray::EndDrawing();
 
+				if (_game_plugin.get())
+                    _game_plugin.get()->on_frame_end(*this);
 			}
 		}
 
+        if (_game_plugin.get())
+            _game_plugin.get()->on_deinit(*this);
 		_renderer.deinit();
 
 		ray::CloseWindow();
@@ -134,7 +144,15 @@ namespace box
 
     void game_impl::init(const char* v[], int32_t c)
     {
-
+		if (c == 2)
+		{
+            _game_plugin.load(v[2]);
+		}
+		else
+		{
+            _game_plugin.load("data/game");
+		}
+ 
 
         auto nfo1 = _scene.register_component<str>("test","tst");
         auto nfo2 = _scene.register_component<flag>("flag","flg");
