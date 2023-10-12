@@ -20,7 +20,6 @@ namespace box
         bool rem_ref()
         {
             if (!--_ref)
-                ;
             {
                 delete this;
                 return true;

@@ -14,9 +14,8 @@ namespace box
         game_impl();
         ~game_impl() override;
 
-        int32_t run(const char* v[], int32_t c);
-        void    init(const char* v[], int32_t c);
-
+        int32_t         run(const char* v[], int32_t c);
+        void            init(const char* v[], int32_t c);
         renderer&       get_renderer() override final;
         asset_provider& get_asset() override final;
         scene&          get_scene() override final;

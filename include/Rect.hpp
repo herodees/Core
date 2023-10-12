@@ -12,8 +12,7 @@ namespace box
         rect(const rect<T>&) = default;
         rect(const T& x1, const T& y1, const T& x2, const T& y2) : min(x1, y1), max(x2, y2){};
         rect(const vec2<T>& a, const vec2<T>& b) : min(a), max(b){};
-        rect& operator=(const rect<T>&) = default;
-
+        rect&   operator=(const rect<T>&) = default;
         void    expand(const T& value);
         void    expand(const vec2<T>& value);
         bool    contains(const T& x, const T& y) const;
