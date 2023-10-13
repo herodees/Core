@@ -38,6 +38,11 @@ namespace box
         return _scene;
     }
 
+    inputs& game_impl::get_inputs()
+    {
+        return _inputs;
+    }
+
 	plugin* game_impl::get_main()
 	{
         return _game_plugin.get();

@@ -3,6 +3,7 @@
 #include "Asset.hpp"
 #include "Graphics.hpp"
 #include "Scene.hpp"
+#include "Inputs.hpp"
 
 namespace box
 {
@@ -15,6 +16,7 @@ namespace box
         virtual asset_provider& get_asset()    = 0;
         virtual plugin*         get_main()     = 0;
         virtual scene&          get_scene()    = 0;
+        virtual inputs&         get_inputs()   = 0;
     };
 
     class plugin

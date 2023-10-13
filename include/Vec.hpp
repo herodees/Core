@@ -9,6 +9,7 @@ namespace box
         vec2()            = default;
         ~vec2()           = default;
         vec2(const vec2&) = default;
+        vec2(const auto& pt) : x(pt.x), y(pt.y){};
         vec2(const T& X, const T& Y) : x(X), y(Y){};
         vec2&    operator=(const vec2&) = default;
         vec2&    operator+=(const T& value);
