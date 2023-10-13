@@ -1,4 +1,4 @@
-#include "inputs.hpp"
+#include "Device.hpp"
 
 namespace box
 {
@@ -137,7 +137,7 @@ namespace box
 
     void inputs_impl::set_mouse_position(int x, int y)
     {
-        return ray::SetMousePosition(x,y);
+        return ray::SetMousePosition(x, y);
     }
 
     void inputs_impl::set_mouse_offset(int offsetX, int offsetY)
@@ -189,4 +189,185 @@ namespace box
     {
         return ray::GetTouchPointCount();
     }
+
+
+    video_impl::~video_impl()
+    {
+    }
+
+    bool video_impl::is_window_fullscreen(void)
+    {
+        return ray::IsWindowFullscreen();
+    }
+
+    bool video_impl::is_window_hidden(void)
+    {
+        return ray::IsWindowHidden();
+    }
+
+    bool video_impl::is_window_minimized(void)
+    {
+        return ray::IsWindowMinimized();
+    }
+
+    bool video_impl::is_window_maximized(void)
+    {
+        return ray::IsWindowMaximized();
+    }
+
+    bool video_impl::is_window_focused(void)
+    {
+        return ray::IsWindowFocused();
+    }
+
+    bool video_impl::is_window_resized(void)
+    {
+        return ray::IsWindowResized();
+    }
+
+    bool video_impl::is_window_state(unsigned int flag)
+    {
+        return ray::IsWindowState(flag);
+    }
+
+    void video_impl::set_window_state(unsigned int flags)
+    {
+        return ray::SetWindowState(flags);
+    }
+
+    void video_impl::clear_window_state(unsigned int flags)
+    {
+        return ray::ClearWindowState(flags);
+    }
+
+    void video_impl::toggle_fullscreen(void)
+    {
+        return ray::ToggleFullscreen();
+    }
+
+    void video_impl::maximize_window(void)
+    {
+        return ray::MaximizeWindow();
+    }
+
+    void video_impl::minimize_window(void)
+    {
+        return ray::MinimizeWindow();
+    }
+
+    void video_impl::restore_window(void)
+    {
+        return ray::RestoreWindow();
+    }
+
+    void video_impl::set_window_title(const char* title)
+    {
+        return ray::SetWindowTitle(title);
+    }
+
+    void video_impl::set_window_position(int x, int y)
+    {
+        return ray::SetWindowPosition(x,y);
+    }
+
+    void video_impl::set_window_monitor(int monitor)
+    {
+        return ray::SetWindowMonitor(monitor);
+    }
+
+    void video_impl::set_window_minsize(int width, int height)
+    {
+        return ray::SetWindowMinSize(width, height);
+    }
+
+    void video_impl::set_window_size(int width, int height)
+    {
+        return ray::SetWindowSize(width, height);
+    }
+
+    void video_impl::set_window_opacity(float opacity)
+    {
+        return ray::SetWindowOpacity(opacity);
+    }
+
+    void* video_impl::get_window_handle(void)
+    {
+        return ray::GetWindowHandle();
+    }
+
+    int video_impl::get_screen_width(void)
+    {
+        return ray::GetScreenWidth();
+    }
+
+    int video_impl::get_screen_height(void)
+    {
+        return ray::GetScreenHeight();
+    }
+
+    int video_impl::get_render_width(void)
+    {
+        return ray::GetRenderWidth();
+    }
+
+    int video_impl::get_render_height(void)
+    {
+        return ray::GetRenderHeight();
+    }
+
+    Vec2i video_impl::get_window_position(void)
+    {
+        return ray::GetWindowPosition();
+    }
+
+    Vec2i video_impl::get_window_scale_dpi(void)
+    {
+        return ray::GetWindowScaleDPI();
+    }
+
+    int video_impl::get_monitor_count(void)
+    {
+        return ray::GetMonitorCount();
+    }
+
+    int video_impl::get_current_monitor(void)
+    {
+        return ray::GetCurrentMonitor();
+    }
+
+    Vec2i video_impl::get_monitor_position(int monitor)
+    {
+        return ray::GetMonitorPosition(monitor);
+    }
+
+    int video_impl::get_monitor_width(int monitor)
+    {
+        return ray::GetMonitorWidth(monitor);
+    }
+
+    int video_impl::get_monitor_height(int monitor)
+    {
+        return ray::GetMonitorHeight(monitor);
+    }
+
+    int video_impl::get_monitor_physical_width(int monitor)
+    {
+        return ray::GetMonitorPhysicalWidth(monitor);
+    }
+
+    int video_impl::get_monitor_physical_height(int monitor)
+    {
+        return ray::GetMonitorPhysicalHeight(monitor);
+    }
+
+    int video_impl::get_monitor_refresh_rate(int monitor)
+    {
+        return ray::GetMonitorRefreshRate(monitor);
+    }
+
+    const char* video_impl::get_monitor_name(int monitor)
+    {
+        return ray::GetMonitorName(monitor);
+    }
+
 } // namespace box

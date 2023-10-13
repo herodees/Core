@@ -5,7 +5,7 @@
 #include "Plugin.hpp"
 #include "Renderer.hpp"
 #include "Scene.hpp"
-#include "Inputs.hpp"
+#include "Device.hpp"
 
 namespace box
 {
@@ -21,13 +21,16 @@ namespace box
         asset_provider& get_asset() override final;
         scene&          get_scene() override final;
         inputs&         get_inputs() override final;
-        plugin*         get_main() override final;
+        video&          get_video() override final;
+        plugin&         get_main() override final;
 
     private:
+        plugin*             _plugin;
         renderer_impl       _renderer;
         asset_provider_impl _assets;
         scene_impl          _scene;
         inputs_impl         _inputs;
+        video_impl          _video;
         game_plugin         _game_plugin;
     };
 } // namespace box

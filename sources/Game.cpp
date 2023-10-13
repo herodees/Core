@@ -7,15 +7,22 @@
 
 namespace box
 {
+    struct null_pugin : plugin
+    {
+        null_pugin()           = default;
+        ~null_pugin() override = default;
+    } null_p;
+
     struct str : component_for_t<str>
     {
         std::string _str{"test"};
     };
+
     struct flag : component_for_t<flag>
     {
     };
 
-	game_impl::game_impl()
+	game_impl::game_impl() : _plugin(&null_p)
 	{
 	}
 
@@ -43,9 +50,14 @@ namespace box
         return _inputs;
     }
 
-	plugin* game_impl::get_main()
+    video& game_impl::get_video()
+    {
+        return _video;
+    }
+
+	plugin& game_impl::get_main()
 	{
-        return _game_plugin.get();
+        return *_plugin;
 	}
 
     int32_t game_impl::run(const char* v[], int32_t c)
@@ -58,8 +70,7 @@ namespace box
         _assets.init(&_renderer);
         _scene.init();
 
-        if (_game_plugin.get())
-            _game_plugin.get()->on_init(*this);
+        get_main().on_init(*this);
 
 		{
 			auto tex = _assets.load_texture(ASSETS_PATH"test.png");
@@ -83,8 +94,7 @@ namespace box
 
 			while (!ray::WindowShouldClose())
 			{
-                if (_game_plugin.get())
-                    _game_plugin.get()->on_frame_begin(*this, ray::GetFrameTime());
+                get_main().on_frame_begin(*this, ray::GetFrameTime());
 
 				Recti scissor(100, 100, 1000, 1000);
 
@@ -133,13 +143,11 @@ namespace box
 
 				ray::EndDrawing();
 
-				if (_game_plugin.get())
-                    _game_plugin.get()->on_frame_end(*this);
+				get_main().on_frame_end(*this);
 			}
 		}
 
-        if (_game_plugin.get())
-            _game_plugin.get()->on_deinit(*this);
+        get_main().on_deinit(*this);
 		_renderer.deinit();
 
 		ray::CloseWindow();
@@ -157,12 +165,19 @@ namespace box
 		{
             _game_plugin.load("data/game");
 		}
- 
+
+		if (_game_plugin.get())
+		{
+            _plugin = _game_plugin.get();
+		}
+        else
+        {
+            _plugin = &null_p;
+		}
 
         auto nfo1 = _scene.register_component<str>("test","tst");
         auto nfo2 = _scene.register_component<flag>("flag","flg");
         auto nfo3 = component_for_t<str>::definition;
-
     }
 
 }
