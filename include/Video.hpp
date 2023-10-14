@@ -20,8 +20,8 @@ namespace box
         virtual void maximize_window(void)   = 0; // Set window state: maximized, if resizable (only PLATFORM_DESKTOP)
         virtual void minimize_window(void)   = 0; // Set window state: minimized, if resizable (only PLATFORM_DESKTOP)
         virtual void restore_window(void)    = 0; // Set window state: not minimized/maximized (only PLATFORM_DESKTOP)
-        
-       
+
+
         virtual void set_window_title(const char* title) = 0; // Set title for window (only PLATFORM_DESKTOP)
         virtual void set_window_position(int x, int y)   = 0; // Set window position on screen (only PLATFORM_DESKTOP)
         virtual void set_window_monitor(int monitor)     = 0; // Set monitor for the current window (fullscreen mode)
@@ -34,8 +34,8 @@ namespace box
         virtual int   get_render_width(void)            = 0; // Get current render width (it considers HiDPI)
         virtual int   get_render_height(void)           = 0; // Get current render height (it considers HiDPI)
 
-        virtual Vec2i get_window_position(void)         = 0; // Get window position XY on monitor
-        virtual Vec2i get_window_scale_dpi(void)        = 0; // Get window scale DPI factor
+        virtual Vec2i get_window_position(void)  = 0; // Get window position XY on monitor
+        virtual Vec2i get_window_scale_dpi(void) = 0; // Get window scale DPI factor
 
         virtual int   get_monitor_count(void)           = 0; // Get number of connected monitors
         virtual int   get_current_monitor(void)         = 0; // Get current connected monitor

@@ -3,8 +3,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(MODULE_FILES
-	d-hello.cpp
-	d-hello.hpp
+	game_plugin.cpp
 )
 
 add_library(DLib SHARED ${MODULE_FILES})

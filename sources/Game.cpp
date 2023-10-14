@@ -86,6 +86,8 @@ namespace box
 			_scene.emplace(eid3, "flg");
 
 			auto sz = _scene.view("tst", "flg");
+			auto sz2 = _scene.view("flg");
+            auto sz3 = sz.combine(sz2);
 
 			for (entity_id id : sz)
 			{
