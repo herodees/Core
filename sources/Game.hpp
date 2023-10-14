@@ -9,7 +9,7 @@
 
 namespace box
 {
-    class game_impl : public game
+    class game_impl final : public game
     {
     public:
         game_impl();
@@ -17,12 +17,12 @@ namespace box
 
         int32_t         run(const char* v[], int32_t c);
         void            init(const char* v[], int32_t c);
-        renderer&       get_renderer() override final;
-        asset_provider& get_asset() override final;
-        scene&          get_scene() override final;
-        inputs&         get_inputs() override final;
-        video&          get_video() override final;
-        plugin&         get_main() override final;
+        renderer&       get_renderer() override;
+        asset_provider& get_asset() override;
+        scene&          get_scene() override;
+        inputs&         get_inputs() override;
+        video&          get_video() override;
+        plugin&         get_main() override;
 
     private:
         plugin*             _plugin;

@@ -16,7 +16,7 @@ namespace box
 
 
 
-	class scene_impl : public scene
+	class scene_impl final : public scene
 	{
 	public:
 		scene_impl();

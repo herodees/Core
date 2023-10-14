@@ -6,7 +6,7 @@ namespace box
 {
 	class renderer_impl;
 
-	class material_impl : public material
+	class material_impl final : public material
 	{
 	public:
 		material_impl(renderer_impl* r);
@@ -33,7 +33,7 @@ namespace box
 
 
 
-	class texture_impl : public texture
+	class texture_impl final : public texture
 	{
 		friend class renderer_impl;
 	public:
@@ -54,7 +54,7 @@ namespace box
 
 
 
-	class render_texture_impl : public render_texture
+	class render_texture_impl final : public render_texture
 	{
 	public:
 		render_texture_impl(renderer_impl* r);

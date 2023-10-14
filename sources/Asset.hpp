@@ -6,7 +6,7 @@ namespace box
 {
 	class renderer_impl;
 
-	class asset_provider_impl : public asset_provider
+	class asset_provider_impl final : public asset_provider
 	{
 	public:
 		asset_provider_impl();
