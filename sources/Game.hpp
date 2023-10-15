@@ -22,7 +22,7 @@ namespace box
         scene&          get_scene() override;
         inputs&         get_inputs() override;
         video&          get_video() override;
-        plugin&         get_main() override;
+        plugin&         get_plugin() override;
 
     private:
         plugin*             _plugin;

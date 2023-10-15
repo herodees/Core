@@ -35,11 +35,6 @@ namespace box
         render_texture* target{};
     };
 
-    struct c_camera_folower : component
-    {
-        Vec2f speed;
-    };
-
     struct c_colider : component
     {
         bool  is_trigger{};

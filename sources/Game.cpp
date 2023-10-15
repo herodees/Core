@@ -55,7 +55,7 @@ namespace box
         return _video;
     }
 
-	plugin& game_impl::get_main()
+	plugin& game_impl::get_plugin()
 	{
         return *_plugin;
 	}
@@ -70,7 +70,7 @@ namespace box
         _assets.init(&_renderer);
         _scene.init();
 
-        get_main().on_init(*this);
+        get_plugin().on_init(*this);
 
 		{
 			auto tex = _assets.load_texture(ASSETS_PATH"test.png");
@@ -96,7 +96,7 @@ namespace box
 
 			while (!ray::WindowShouldClose())
 			{
-                get_main().on_frame_begin(*this, ray::GetFrameTime());
+                get_plugin().on_frame_begin(*this, ray::GetFrameTime());
 
 				Recti scissor(100, 100, 1000, 1000);
 
@@ -145,11 +145,11 @@ namespace box
 
 				ray::EndDrawing();
 
-				get_main().on_frame_end(*this);
+				get_plugin().on_frame_end(*this);
 			}
 		}
 
-        get_main().on_deinit(*this);
+        get_plugin().on_deinit(*this);
 		_renderer.deinit();
 
 		ray::CloseWindow();

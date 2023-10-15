@@ -15,7 +15,7 @@ namespace box
 
         virtual renderer&       get_renderer() = 0;
         virtual asset_provider& get_asset()    = 0;
-        virtual plugin&         get_main()     = 0;
+        virtual plugin&         get_plugin()   = 0;
         virtual scene&          get_scene()    = 0;
         virtual inputs&         get_inputs()   = 0;
         virtual video&          get_video()    = 0;
