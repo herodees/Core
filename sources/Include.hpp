@@ -15,6 +15,11 @@ namespace ray
 #include "raymath.h"
 }
 
+namespace chip
+{
+#include "chipmunk/chipmunk.h"
+}
+
 namespace std
 {
 	struct string_hash

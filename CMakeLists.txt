@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(main)
+project(main C CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -21,12 +21,16 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE})
 target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE}/deps")
 
+#target_include_directories(${PROJECT_NAME} PUBLIC "${chipmunk_SOURCE_DIR}/include")
+#target_include_directories(${PROJECT_NAME} PUBLIC "${chipmunk_SOURCE_DIR}/src")
+
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     raylib
     imgui
     stb
     EnTT
+    chipmunk
 )
 
 # Setting ASSETS_PATH
