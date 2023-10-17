@@ -25,6 +25,10 @@ namespace box
         plugin&         get_plugin() override;
 
     private:
+        void on_frame_begin();
+        void on_frame_end();
+
+    private:
         plugin*             _plugin;
         renderer_impl       _renderer;
         asset_provider_impl _assets;

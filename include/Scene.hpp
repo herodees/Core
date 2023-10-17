@@ -8,11 +8,6 @@ namespace box
 
     using tag_id = uint8_t;
 
-    struct component
-    {
-    };
-
-
     template <size_t SZE>
     class scene_view
     {
@@ -86,24 +81,11 @@ namespace box
 
 
 
-    class behavior
-    {
-    public:
-        behavior()          = default;
-        virtual ~behavior() = default;
-
-        virtual void on_create(entity& self){};
-        virtual void on_destroy(entity& self){};
-        virtual void on_step(entity& self, float dt){};
-        virtual void on_static_step(entity& self, float dt){};
-        virtual void on_render(entity& self){};
-    };
-
-
 
     class scene
     {
     public:
+        scene()          = default;
         virtual ~scene() = default;
 
         virtual entity_id  create()                                                                                = 0;
@@ -119,11 +101,42 @@ namespace box
         virtual bool       contains_tag(entity_id id, tag_id tag) const                                            = 0;
         virtual bool       get_view(scene_view<1>* target, const tag_id* tags, size_t count) const                 = 0;
         virtual bool       get_view(scene_view<1>* target, const std::string_view* components, size_t count) const = 0;
+        virtual system*    get_system(std::string_view sys) const                                                  = 0;
         
         auto view(std::convertible_to<std::string_view> auto&&... s);
         auto view(std::convertible_to<tag_id> auto&&... s);
         template <typename T, size_t S>
         auto view(std::initializer_list<T>&& list);
+    };
+
+
+
+    class system
+    {
+    public:
+        system()          = default;
+        virtual ~system() = default;
+    
+        virtual void on_scene_begin(game& game){};
+        virtual void on_scene_end(game& game){};
+        virtual void on_frame_begin(game& game, float delta_time){};
+        virtual void on_frame_end(game& game){};
+        virtual void update(game& game, float delta) = 0;
+    };
+
+
+
+    class behavior
+    {
+    public:
+        behavior()          = default;
+        virtual ~behavior() = default;
+
+        virtual void on_create(entity& self){};
+        virtual void on_destroy(entity& self){};
+        virtual void on_step(entity& self, float dt){};
+        virtual void on_static_step(entity& self, float dt){};
+        virtual void on_render(entity& self){};
     };
 
 

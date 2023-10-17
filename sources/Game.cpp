@@ -58,7 +58,19 @@ namespace box
 	plugin& game_impl::get_plugin()
 	{
         return *_plugin;
-	}
+    }
+
+    void game_impl::on_frame_begin()
+    {
+        get_plugin().on_frame_begin(*this, ray::GetFrameTime());
+        _scene.on_frame_begin(*this, ray::GetFrameTime());
+    }
+
+    void game_impl::on_frame_end()
+    {
+        _scene.on_frame_end(*this);
+        get_plugin().on_frame_end(*this);
+    }
 
     int32_t game_impl::run(const char* v[], int32_t c)
 	{
@@ -96,7 +108,7 @@ namespace box
 
 			while (!ray::WindowShouldClose())
 			{
-                get_plugin().on_frame_begin(*this, ray::GetFrameTime());
+                on_frame_begin();
 
 				Recti scissor(100, 100, 1000, 1000);
 
@@ -145,7 +157,7 @@ namespace box
 
 				ray::EndDrawing();
 
-				get_plugin().on_frame_end(*this);
+				on_frame_end();
 			}
 		}
 

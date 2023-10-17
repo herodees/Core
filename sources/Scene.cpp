@@ -2,23 +2,7 @@
 
 namespace box
 {
-	static std::unordered_map<std::string, component_definition, std::string_hash, std::equal_to<>> s_somponents {};
 
-	component_definition* component_definition::create(std::string_view id, std::string_view name, entt::registry::base_type* str)
-	{
-		auto it = s_somponents.find(id);
-		if(it != s_somponents.end())
-			return &it->second;
-		return &s_somponents.emplace(std::string(id), component_definition{ std::string(id), std::string(name), str }).first->second;
-	}
-
-	component_definition* component_definition::find(std::string_view id)
-	{
-		auto it = s_somponents.find(id);
-		if (it == s_somponents.end())
-			return nullptr;
-		return &it->second;
-	}
 
 	scene_impl::scene_impl()
 	{
@@ -40,6 +24,7 @@ namespace box
 
 		if (val)
 			val;
+
 	}
 
 	entity_id scene_impl::create()
@@ -59,7 +44,7 @@ namespace box
 
 	component* scene_impl::emplace(entity_id id, std::string_view cmp_id)
 	{
-		if (auto* cmp = component_definition::find(cmp_id))
+		if (auto* cmp = find_component_definition(cmp_id))
 		{
 			cmp->storage->emplace((entt::entity)id);
 			return static_cast<component*>(cmp->storage->get((entt::entity)id));
@@ -69,7 +54,7 @@ namespace box
 
 	void scene_impl::remove(entity_id id, std::string_view cmp_id)
 	{
-		if (auto* cmp = component_definition::find(cmp_id))
+        if (auto* cmp = find_component_definition(cmp_id))
 		{
 			cmp->storage->remove((entt::entity)id);
 		}
@@ -77,7 +62,7 @@ namespace box
 
 	bool scene_impl::contains(entity_id id, std::string_view cmp_id) const
 	{
-		if (auto* cmp = component_definition::find(cmp_id))
+        if (auto* cmp = find_component_definition(cmp_id))
 		{
 			return cmp->storage->contains((entt::entity)id);
 		}
@@ -97,7 +82,7 @@ namespace box
 
 	void scene_impl::patch(entity_id id, std::string_view cmp_id)
 	{
-		if (auto* cmp = component_definition::find(cmp_id))
+        if (auto* cmp = find_component_definition(cmp_id))
 		{
 			static_cast<entt::storage_for_t<component>*>(cmp->storage)->patch((entt::entity)id);
 		}
@@ -144,7 +129,7 @@ namespace box
 		out._scene = const_cast<scene_impl*>(this);
 		for (size_t n = 0; n < count; ++n)
 		{
-			if (auto* cmp = component_definition::find(components[n]))
+            if (auto* cmp = find_component_definition(components[n]))
 			{
 				out._storage[n] = cmp->storage;
 			}
@@ -172,6 +157,38 @@ namespace box
 		out._size = a->size();
 		out._data = (entity_id*)a->data();
 		return true;
-	}
+    }
+
+    system* scene_impl::get_system(std::string_view sys) const
+    {
+        auto it = _systems.find(sys);
+        if (it == _systems.end())
+            return nullptr;
+        return it->second.get();
+    }
+
+    const component_definition* scene_impl::find_component_definition(std::string_view id) const
+    {
+        auto it = _components.find(id);
+        if (it == _components.end())
+            return nullptr;
+        return &it->second;
+    }
+
+    void scene_impl::on_frame_begin(game& gme, float delta_time)
+    {
+        for (auto& it : _systems)
+        {
+            it.second->on_frame_begin(gme, delta_time);
+		}
+    }
+
+    void scene_impl::on_frame_end(game& gme)
+    {
+        for (auto& it : _systems)
+        {
+            it.second->on_frame_end(gme);
+        }
+    }
 
 }

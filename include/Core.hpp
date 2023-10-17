@@ -3,6 +3,7 @@
 namespace box
 {
     struct vertex;
+    struct component;
     class asset_provider;
     class texture;
     class material;
@@ -12,6 +13,8 @@ namespace box
     class renderer;
     class scene;
     class entity;
+    class system;
+    class game;
     enum class blend_mode;
     enum class uniform_type;
 } // namespace box

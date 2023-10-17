@@ -9,9 +9,6 @@ namespace box
 		std::string id;
 		std::string name;
 		entt::registry::base_type* storage;
-
-		static component_definition* create(std::string_view id, std::string_view name, entt::registry::base_type* str);
-		static component_definition* find(std::string_view id);
 	};
 
 
@@ -37,15 +34,26 @@ namespace box
 		bool contains_tag(entity_id id, tag_id tag) const override;
 		bool get_view(scene_view<1>* target, const tag_id* tags, size_t count) const override;
 		bool get_view(scene_view<1>* target, const std::string_view* components, size_t count) const override;
+        system* get_system(std::string_view sys) const override;
 
 		template <typename C>
 		const component_definition* register_component(std::string_view name, std::string_view id);
 
+        template <typename S>
+        const component_definition* register_system(std::string_view name, std::string_view id);
+
+		const component_definition* find_component_definition(std::string_view id) const;
+
 		entt::registry& registry() { return _registry; }
+
+        void on_frame_begin(game& gme, float delta_time);
+        void on_frame_end(game& gme);
 
 	private:
 		entt::registry _registry;
 		std::vector<entt::sparse_set> _tags{};
+        std::unordered_map<std::string, std::unique_ptr<system>, std::string_hash, std::equal_to<>> _systems{};
+        std::unordered_map<std::string, component_definition, std::string_hash, std::equal_to<>> _components{};
 	};
 
 
@@ -67,10 +75,25 @@ namespace box
 
 	template<typename C>
 	inline const component_definition* scene_impl::register_component(std::string_view name, std::string_view id)
-	{
-		C::definition = component_definition::create(id, name, &_registry.storage<C>());
+    {
+        auto it = _components.find(id);
+        if (it != _components.end())
+            return &it->second;
+		C::definition = &_components
+                                 .emplace(std::string(id),
+                                          component_definition{std::string(id), std::string(name), &_registry.storage<C>()})
+                                 .first->second;
 		return C::definition;
-	}
+    }
+
+    template <typename S>
+    inline const component_definition* scene_impl::register_system(std::string_view name, std::string_view id)
+    {
+        auto it = _systems.find(id);
+        if (it != _systems.end())
+            return &it->second;
+        return &_systems.emplace(std::string(id), new S()).first->second;
+    }
 
 	template<typename T>
 	inline bool component_for_t<T>::contains(entity_id id)

@@ -5,6 +5,10 @@
 
 namespace box
 {
+    struct component
+    {
+    };
+
     struct c_transform : component
     {
         Vec2f position{};
