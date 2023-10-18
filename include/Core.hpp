@@ -28,6 +28,7 @@ namespace box
 #include "Asset.hpp"
 #include "Components.hpp"
 #include "Export.hpp"
+#include "Physics.hpp"
 #include "Game.hpp"
 #include "Graphics.hpp"
 #include "Rect.hpp"

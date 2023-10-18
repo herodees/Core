@@ -20,6 +20,7 @@ namespace box
         renderer&       get_renderer() override;
         asset_provider& get_asset() override;
         scene&          get_scene() override;
+        physics&        get_physics() override;
         inputs&         get_inputs() override;
         video&          get_video() override;
         plugin&         get_plugin() override;

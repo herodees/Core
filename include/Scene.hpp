@@ -102,7 +102,7 @@ namespace box
         virtual bool       get_view(scene_view<1>* target, const tag_id* tags, size_t count) const                 = 0;
         virtual bool       get_view(scene_view<1>* target, const std::string_view* components, size_t count) const = 0;
         virtual system*    get_system(std::string_view sys) const                                                  = 0;
-        
+
         auto view(std::convertible_to<std::string_view> auto&&... s);
         auto view(std::convertible_to<tag_id> auto&&... s);
         template <typename T, size_t S>

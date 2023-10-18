@@ -20,9 +20,7 @@ target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE})
 target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE}/deps")
-
-#target_include_directories(${PROJECT_NAME} PUBLIC "${chipmunk_SOURCE_DIR}/include")
-#target_include_directories(${PROJECT_NAME} PUBLIC "${chipmunk_SOURCE_DIR}/src")
+target_include_directories(${PROJECT_NAME} PRIVATE ${CHIPMUNK_INCLUDE})
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 target_link_libraries(${PROJECT_NAME} PRIVATE

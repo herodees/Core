@@ -45,6 +45,11 @@ namespace box
         return _scene;
     }
 
+    physics& game_impl::get_physics()
+    {
+        return *static_cast<physics*>(_scene.get_system("physics"));
+    }
+
     inputs& game_impl::get_inputs()
     {
         return _inputs;
@@ -101,6 +106,7 @@ namespace box
 			auto sz2 = _scene.view("flg");
             auto sz3 = sz.combine(sz2);
 
+
 			for (entity_id id : sz)
 			{
 				id = id;
@@ -109,6 +115,9 @@ namespace box
 			while (!ray::WindowShouldClose())
 			{
                 on_frame_begin();
+
+				_scene.update(*this, ray::GetFrameTime());
+
 
 				Recti scissor(100, 100, 1000, 1000);
 

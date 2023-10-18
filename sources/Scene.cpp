@@ -1,4 +1,5 @@
 #include "Scene.hpp"
+#include "Physics.hpp"
 
 namespace box
 {
@@ -14,16 +15,9 @@ namespace box
 
 	void scene_impl::init()
 	{
-		entt::storage_for_t<std::remove_const_t<void>> storage;
-		entt::sparse_set set;
+        register_system<physics_impl>("Physics", "physics");
 
-		set.emplace({});
-		bool val = set.contains({});
-		set.remove({});
-		val = set.contains({});
-
-		if (val)
-			val;
+		register_component<rigid_body>("Rigidbody", "rigidbody");
 
 	}
 
@@ -173,6 +167,14 @@ namespace box
         if (it == _components.end())
             return nullptr;
         return &it->second;
+    }
+
+    void scene_impl::update(game& gme, float delta_time)
+    {
+        for (auto& it : _systems)
+        {
+            it.second->update(gme, delta_time);
+        }
     }
 
     void scene_impl::on_frame_begin(game& gme, float delta_time)

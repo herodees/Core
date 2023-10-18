@@ -21,35 +21,40 @@ namespace box
 
 		void init();
 
-		entity_id create() override;
-		void release(entity_id id) override;
-		bool is_valid(entity_id id) const override;
-		component* emplace(entity_id id, std::string_view component) override;
-		void remove(entity_id id, std::string_view component) override;
-		bool contains(entity_id id, std::string_view component) const override;
-		bool contains(entity_id id, const Storage** storage, size_t count) const override;
-		void patch(entity_id id, std::string_view component) override;
-		void add_tag(entity_id id, tag_id tag) override;
-		void remove_tag(entity_id id, tag_id tag) override;
-		bool contains_tag(entity_id id, tag_id tag) const override;
-		bool get_view(scene_view<1>* target, const tag_id* tags, size_t count) const override;
-		bool get_view(scene_view<1>* target, const std::string_view* components, size_t count) const override;
-        system* get_system(std::string_view sys) const override;
 
-		template <typename C>
-		const component_definition* register_component(std::string_view name, std::string_view id);
+        entity_id  create() override;
+        void       release(entity_id id) override;
+        bool       is_valid(entity_id id) const override;
+        component* emplace(entity_id id, std::string_view component) override;
+        void       remove(entity_id id, std::string_view component) override;
+        bool       contains(entity_id id, std::string_view component) const override;
+        bool       contains(entity_id id, const Storage** storage, size_t count) const override;
+        void       patch(entity_id id, std::string_view component) override;
+        void       add_tag(entity_id id, tag_id tag) override;
+        void       remove_tag(entity_id id, tag_id tag) override;
+        bool       contains_tag(entity_id id, tag_id tag) const override;
+        bool       get_view(scene_view<1>* target, const tag_id* tags, size_t count) const override;
+        bool       get_view(scene_view<1>* target, const std::string_view* components, size_t count) const override;
+        system*    get_system(std::string_view sys) const override;
+
+        template <typename C>
+        const component_definition* register_component(std::string_view name, std::string_view id);
 
         template <typename S>
-        const component_definition* register_system(std::string_view name, std::string_view id);
+        const system* register_system(std::string_view name, std::string_view id);
 
-		const component_definition* find_component_definition(std::string_view id) const;
+        const component_definition* find_component_definition(std::string_view id) const;
 
-		entt::registry& registry() { return _registry; }
+        entt::registry& registry()
+        {
+            return _registry;
+        }
 
+        void update(game& gme, float delta_time);
         void on_frame_begin(game& gme, float delta_time);
         void on_frame_end(game& gme);
 
-	private:
+    private:
 		entt::registry _registry;
 		std::vector<entt::sparse_set> _tags{};
         std::unordered_map<std::string, std::unique_ptr<system>, std::string_hash, std::equal_to<>> _systems{};
@@ -87,12 +92,12 @@ namespace box
     }
 
     template <typename S>
-    inline const component_definition* scene_impl::register_system(std::string_view name, std::string_view id)
+    inline const system* scene_impl::register_system(std::string_view name, std::string_view id)
     {
         auto it = _systems.find(id);
         if (it != _systems.end())
-            return &it->second;
-        return &_systems.emplace(std::string(id), new S()).first->second;
+            return it->second.get();
+        return _systems.emplace(std::string(id), new S()).first->second.get();
     }
 
 	template<typename T>

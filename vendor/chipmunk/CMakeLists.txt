@@ -25,13 +25,12 @@ file(GLOB chipmunk_public_header "${chipmunk_SOURCE_DIR}/include/chipmunk/*.h")
 add_library(chipmunk STATIC
     ${chipmunk_source_files}
 )
-target_include_directories(chipmunk PRIVATE ${chipmunk_SOURCE_DIR}/include)
+
+target_include_directories(chipmunk PUBLIC ${chipmunk_SOURCE_DIR}/include)
+set(CHIPMUNK_INCLUDE "${chipmunk_SOURCE_DIR}/include")
 
 if(MSVC)
     set_source_files_properties(${chipmunk_source_files} PROPERTIES LANGUAGE CXX)
     set_target_properties(chipmunk PROPERTIES LINKER_LANGUAGE CXX)
     set_target_properties(chipmunk PROPERTIES CXX_STANDARD 11)
 endif(MSVC)
-
-target_include_directories(chipmunk INTERFACE ${chipmunk_SOURCE_DIR}/include)
-

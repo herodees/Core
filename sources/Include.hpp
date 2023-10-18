@@ -1,5 +1,8 @@
 #pragma once
 
+#define CP_USE_DOUBLES 0
+#define CP_USE_CGTYPES 0
+
 #include <Core.hpp>
 #include <cstdint>
 #include <algorithm>
@@ -13,11 +16,6 @@ namespace ray
 #include <raylib.h>
 #include "rlgl.h"
 #include "raymath.h"
-}
-
-namespace chip
-{
-#include "chipmunk/chipmunk.h"
 }
 
 namespace std

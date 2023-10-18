@@ -19,7 +19,10 @@ namespace box
         virtual scene&          get_scene()    = 0;
         virtual inputs&         get_inputs()   = 0;
         virtual video&          get_video()    = 0;
+        virtual physics&        get_physics()  = 0;
     };
+
+
 
     class plugin
     {
