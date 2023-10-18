@@ -18,6 +18,27 @@ namespace box
         }
     }
 
+    void physics_impl::set_gravity(Vec2f gravity)
+    {
+        _space.gravity.x = gravity.x;
+        _space.gravity.y = gravity.y;
+    }
+
+    Vec2f physics_impl::get_gravity() const
+    {
+        return Vec2f(_space.gravity);
+    }
+
+    void physics_impl::set_damping(float damping)
+    {
+        _space.damping = damping;
+    }
+
+    float physics_impl::get_damping() const
+    {
+        return _space.damping;
+    }
+
     void physics_impl::update(game& game, float delta)
     {
         constexpr float step_time = 0.0166666666f;
@@ -27,6 +48,8 @@ namespace box
             cpSpaceStep(&_space, delta);
             _curent_time -= step_time;
         }
+
+        _space.gravity;
     }
 
     void physics_impl::reset()

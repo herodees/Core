@@ -12,6 +12,11 @@ namespace box
         physics_impl();
         ~physics_impl() override;
 
+        void  set_gravity(Vec2f gravity) override;
+        Vec2f get_gravity() const override;
+        void  set_damping(float damping) override;
+        float get_damping() const override;
+
         void update(game& game, float delta) override;
 
         void reset();
@@ -67,5 +72,208 @@ namespace box
 
         cpBody _body;
     };
+
+    template <typename T, typename SHAPE>
+    struct base_collider : T
+    {
+        static const component_definition* definition;
+
+        base_collider();
+        ~base_collider() override;
+        void            set_body(rigid_body_component* body) override;
+        float           get_mass() override;
+        void            set_mass(float mass) override;
+        float           get_density() override;
+        void            set_density(float density) override;
+        float           get_moment() override;
+        float           get_area() override;
+        Vec2f           get_center_of_gravity() override;
+        Rectf           get_bb() const override;
+        bool            get_sensor() const override;
+        void            set_sensor(bool sensor) override;
+        float           get_elasticity() const override;
+        void            set_elasticity(float elasticity) override;
+        float           get_friction() const override;
+        void            set_friction(float friction) override;
+        Vec2f           get_surface_velocity() const override;
+        void            set_surface_velocity(Vec2f surfaceVelocity) override;
+        void*           get_user_data() const override;
+        void            set_user_data(void* userData) override;
+        uintptr_t       get_collision_type() const override;
+        void            set_collision_type(uintptr_t collisionType) override;
+        collider_filter get_filter() const override;
+        void            set_filter(collider_filter filter) override;
+
+        SHAPE _shape;
+    };
+
+    using circle_collider = base_collider<circle_collider_component, cpCircleShape>;
+    using segment_collider = base_collider<segment_collider_component, cpSegmentShape>;
+    using polygon_collider = base_collider<polygon_collider_component, cpPolyShape>;
+
+
+    template <>
+    inline base_collider<circle_collider_component, cpCircleShape>::base_collider()
+    {
+        cpCircleShapeInit(&_shape, nullptr, 0, {0, 0});
+    }
+
+    template <>
+    inline base_collider<segment_collider_component, cpSegmentShape>::base_collider()
+    {
+        cpSegmentShapeInit(&_shape, nullptr, {}, {}, 0);
+    }
+
+    template <>
+    inline base_collider<polygon_collider_component, cpPolyShape>::base_collider()
+    {
+        cpPolyShapeInit(&_shape, nullptr, 0, nullptr, {}, 0);
+    }
+
+    template <typename T, typename SHAPE>
+    inline base_collider<T, SHAPE>::~base_collider()
+    {
+        cpShapeDestroy(&_shape.shape);
+    }
+
+    template <typename T, typename SHAPE>
+    inline void base_collider<T, SHAPE>::set_body(rigid_body_component* body)
+    {
+        cpShapeSetBody(&_shape.shape, &static_cast<rigid_body*>(body)->_body);
+    }
+
+    template <typename T, typename SHAPE>
+    inline float base_collider<T, SHAPE>::get_mass()
+    {
+        return _shape.shape.massInfo.m;
+    }
+
+    template <typename T, typename SHAPE>
+    inline void base_collider<T, SHAPE>::set_mass(float mass)
+    {
+        cpShapeSetMass(&_shape.shape, mass);
+    }
+
+    template <typename T, typename SHAPE>
+    inline float base_collider<T, SHAPE>::get_density()
+    {
+        return _shape.shape.massInfo.m / _shape.shape.massInfo.area;
+    }
+
+    template <typename T, typename SHAPE>
+    inline void base_collider<T, SHAPE>::set_density(float density)
+    {
+        cpShapeSetDensity(&_shape.shape, density);
+    }
+
+    template <typename T, typename SHAPE>
+    inline float base_collider<T, SHAPE>::get_moment()
+    {
+        return _shape.shape.massInfo.m * _shape.shape.massInfo.i;
+    }
+
+    template <typename T, typename SHAPE>
+    inline float base_collider<T, SHAPE>::get_area()
+    {
+        return _shape.shape.massInfo.area;
+    }
+
+    template <typename T, typename SHAPE>
+    inline Vec2f base_collider<T, SHAPE>::get_center_of_gravity()
+    {
+        return Vec2f(_shape.shape.massInfo.cog);
+    }
+
+    template <typename T, typename SHAPE>
+    inline Rectf base_collider<T, SHAPE>::get_bb() const
+    {
+        return Rectf(_shape.shape.bb.l, _shape.shape.bb.t, _shape.shape.bb.r, _shape.shape.bb.b);
+    }
+
+    template <typename T, typename SHAPE>
+    inline bool base_collider<T, SHAPE>::get_sensor() const
+    {
+        return _shape.shape.sensor;
+    }
+
+    template <typename T, typename SHAPE>
+    inline void base_collider<T, SHAPE>::set_sensor(bool sensor)
+    {
+        cpShapeSetSensor(&_shape.shape, sensor);
+    }
+
+    template <typename T, typename SHAPE>
+    inline float base_collider<T, SHAPE>::get_elasticity() const
+    {
+        return _shape.shape.e;
+    }
+
+    template <typename T, typename SHAPE>
+    inline void base_collider<T, SHAPE>::set_elasticity(float elasticity)
+    {
+        cpShapeSetElasticity(&_shape.shape, elasticity);
+    }
+
+    template <typename T, typename SHAPE>
+    inline float base_collider<T, SHAPE>::get_friction() const
+    {
+        return _shape.shape.u;
+    }
+
+    template <typename T, typename SHAPE>
+    inline void base_collider<T, SHAPE>::set_friction(float friction)
+    {
+        cpShapeSetFriction(&_shape.shape, friction);
+    }
+
+    template <typename T, typename SHAPE>
+    inline Vec2f base_collider<T, SHAPE>::get_surface_velocity() const
+    {
+        return Vec2f(_shape.shape.surfaceV);
+    }
+
+    template <typename T, typename SHAPE>
+    inline void base_collider<T, SHAPE>::set_surface_velocity(Vec2f surfaceVelocity)
+    {
+        cpShapeSetSurfaceVelocity(&_shape.shape, {surfaceVelocity.x, surfaceVelocity.y});
+    }
+
+    template <typename T, typename SHAPE>
+    inline void* base_collider<T, SHAPE>::get_user_data() const
+    {
+        return _shape.shape.userData;
+    }
+
+    template <typename T, typename SHAPE>
+    inline void base_collider<T, SHAPE>::set_user_data(void* userData)
+    {
+        cpShapeSetUserData(&_shape.shape, userData);
+    }
+
+    template <typename T, typename SHAPE>
+    inline uintptr_t base_collider<T, SHAPE>::get_collision_type() const
+    {
+        return _shape.shape.type;
+    }
+
+    template <typename T, typename SHAPE>
+    inline void base_collider<T, SHAPE>::set_collision_type(uintptr_t collisionType)
+    {
+        cpShapeSetCollisionType(&_shape.shape, collisionType);
+    }
+
+    template <typename T, typename SHAPE>
+    inline collider_filter base_collider<T, SHAPE>::get_filter() const
+    {
+        return reinterpret_cast<const collider_filter&>(_shape.shape.filter);
+    }
+
+    template <typename T, typename SHAPE>
+    inline void base_collider<T, SHAPE>::set_filter(collider_filter filter)
+    {
+        cpShapeSetFilter(&_shape.shape, reinterpret_cast<const cpShapeFilter&>(filter));
+    }
+
+
 
 } // namespace box

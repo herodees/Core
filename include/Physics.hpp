@@ -8,6 +8,10 @@ namespace box
         physics() = default;
         virtual ~physics() = default;
 
+        virtual void  set_gravity(Vec2f gravity) = 0;
+        virtual Vec2f get_gravity() const        = 0;
+        virtual void  set_damping(float damping) = 0;
+        virtual float get_damping() const        = 0;
     };
 
     enum class body_type
@@ -56,4 +60,91 @@ namespace box
         virtual void      apply_impulse_local(Vec2f j, Vec2f r)                   = 0;
     };
 
+    struct collider_filter
+    {
+        /// Two objects with the same non-zero group value do not collide.
+        /// This is generally used to group objects in a composite object together to disable self collisions.
+        uintptr_t group;
+        /// A bitmask of user definable categories that this object belongs to.
+        /// The category/mask combinations of both objects in a collision must agree for a collision to occur.
+        uint32_t categories;
+        /// A bitmask of user definable category types that this object object collides with.
+        /// The category/mask combinations of both objects in a collision must agree for a collision to occur.
+        uint32_t mask;
+    };
+
+    struct collider_component : component
+    {
+        virtual ~collider_component() = default;
+        /// Set the cpBody this shape is connected to.
+        /// Can only be used if the shape is not currently added to a space.
+        virtual void set_body(rigid_body_component* body) = 0;
+
+        /// Get the mass of the shape if you are having Chipmunk calculate mass properties for you.
+        virtual float get_mass() = 0;
+        /// Set the mass of this shape to have Chipmunk calculate mass properties for you.
+        virtual void set_mass(float mass) = 0;
+
+        /// Get the density of the shape if you are having Chipmunk calculate mass properties for you.
+        virtual float get_density() = 0;
+        /// Set the density  of this shape to have Chipmunk calculate mass properties for you.
+        virtual void set_density(float density) = 0;
+
+        /// Get the calculated moment of inertia for this shape.
+        virtual float get_moment() = 0;
+        /// Get the calculated area of this shape.
+        virtual float get_area() = 0;
+        /// Get the centroid of this shape.
+        virtual Vec2f get_center_of_gravity() = 0;
+
+        /// Get the bounding box that contains the shape given it's current position and angle.
+        virtual Rectf get_bb() const = 0;
+
+        /// Get if the shape is set to be a sensor or not.
+        virtual bool get_sensor() const = 0;
+        /// Set if the shape is a sensor or not.
+        virtual void set_sensor(bool sensor) = 0;
+
+        /// Get the elasticity of this shape.
+        virtual float get_elasticity() const = 0;
+        /// Set the elasticity of this shape.
+        virtual void set_elasticity(float elasticity) = 0;
+
+        /// Get the friction of this shape.
+        virtual float get_friction() const = 0;
+        /// Set the friction of this shape.
+        virtual void set_friction(float friction) = 0;
+
+        /// Get the surface velocity of this shape.
+        virtual Vec2f get_surface_velocity() const = 0;
+        /// Set the surface velocity of this shape.
+        virtual void set_surface_velocity(Vec2f surfaceVelocity) = 0;
+
+        /// Get the user definable data pointer of this shape.
+        virtual void* get_user_data() const = 0;
+        /// Set the user definable data pointer of this shape.
+        virtual void set_user_data(void* userData) = 0;
+
+        /// Set the collision type of this shape.
+        virtual uintptr_t get_collision_type() const = 0;
+        /// Get the collision type of this shape.
+        virtual void set_collision_type(uintptr_t collisionType) = 0;
+
+        /// Get the collision filtering parameters of this shape.
+        virtual collider_filter get_filter() const = 0;
+        /// Set the collision filtering parameters of this shape.
+        virtual void set_filter(collider_filter filter) = 0;
+    };
+
+    struct circle_collider_component : collider_component
+    {
+    };
+
+    struct segment_collider_component : collider_component
+    {
+    };
+
+    struct polygon_collider_component : collider_component
+    {
+    };
 } // namespace box
