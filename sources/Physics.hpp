@@ -2,6 +2,7 @@
 
 #include "Include.hpp"
 #include <chipmunk/chipmunk_structs.h>
+#include <chipmunk/chipmunk_private.h>
 #include "Scene.hpp"
 
 namespace box
@@ -12,13 +13,14 @@ namespace box
         physics_impl();
         ~physics_impl() override;
 
+        void init(scene& scn) override;
+
         void  set_gravity(Vec2f gravity) override;
         Vec2f get_gravity() const override;
         void  set_damping(float damping) override;
         float get_damping() const override;
 
-        void update(game& game, float delta) override;
-
+        void update(scene& scn, float delta) override;
         void reset();
 
     private:
@@ -107,10 +109,25 @@ namespace box
         SHAPE _shape;
     };
 
-    using circle_collider = base_collider<circle_collider_component, cpCircleShape>;
-    using segment_collider = base_collider<segment_collider_component, cpSegmentShape>;
-    using polygon_collider = base_collider<polygon_collider_component, cpPolyShape>;
+    struct circle_collider : base_collider<circle_collider_component, cpCircleShape>
+    {
+        void setup(float radius, Vec2f offset) override;
+    };
 
+    struct segment_collider : base_collider<segment_collider_component, cpSegmentShape>
+    {
+        void setup(Vec2f a, Vec2f b, float r) override;
+    };
+
+    struct polygon_collider : base_collider<polygon_collider_component, cpPolyShape>
+    {
+        void setup(const Vec2f* verts, size_t count, float radius) override;
+    };
+
+
+
+    template <typename T, typename SHAPE>
+    const component_definition* base_collider<T, SHAPE>::definition = nullptr;
 
     template <>
     inline base_collider<circle_collider_component, cpCircleShape>::base_collider()
@@ -273,6 +290,8 @@ namespace box
     {
         cpShapeSetFilter(&_shape.shape, reinterpret_cast<const cpShapeFilter&>(filter));
     }
+
+
 
 
 

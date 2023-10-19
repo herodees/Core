@@ -47,7 +47,7 @@ namespace box
 		auto ret = new render_texture_impl(this);
 		ret->create(width, height, depth);
 		return ret;
-	}
+    }
 
 	bool renderer_impl::begin_2d(const camera& cam, bool depthsort)
 	{
@@ -109,11 +109,108 @@ namespace box
 		_command.material = &_default;
 	}
 
+    void renderer_impl::update(scene& scn, float delta)
+    {
+    }
 
-	void renderer_impl::enable_scissor_test(const Recti& scissor)
-	{
-		ray::BeginScissorMode(scissor.min.x, scissor.min.y, scissor.width(), scissor.height());
-	}
+    void renderer_impl::draw_line(Vec2f p1, Vec2f p2, color clr)
+    {
+        ray::rlBegin(RL_LINES);
+        ray::rlColor4ub(clr.r, clr.g, clr.b, clr.a);
+        ray::rlVertex2f(p1.x, p1.y);
+        ray::rlVertex2f(p2.x, p2.y);
+        ray::rlEnd();
+    }
+
+    void renderer_impl::draw_polyline(const Vec2f* p, size_t size, bool closed, color clr)
+    {
+        if (size < 2)
+            return;
+        ray::rlBegin(RL_LINES);
+        for (size_t n = 1; n < size; ++n)
+        {
+            ray::rlColor4ub(clr.r, clr.g, clr.b, clr.a);
+            ray::rlVertex2f(p[n - 1].x, p[n - 1].y);
+            ray::rlVertex2f(p[n].x, p[n].y);
+		}
+		if (closed && size > 2)
+        {
+            ray::rlColor4ub(clr.r, clr.g, clr.b, clr.a);
+            ray::rlVertex2f(p[size - 1].x, p[size - 1].y);
+            ray::rlVertex2f(p[0].x, p[0].y);
+		}
+        ray::rlEnd();
+    }
+
+    void renderer_impl::draw_circle_segment(Vec2f center, float radius, color clr, uint32_t segments, float start_ang, float end_ang)
+    {
+        if (radius <= 0.0f)
+            radius = 0.1f; // Avoid div by zero issue
+
+        // Function expects (endAngle > startAngle)
+        if (end_ang < start_ang)
+        {
+            std::swap(start_ang, end_ang);
+        }
+
+        int minSegments = (int)ceilf((end_ang - start_ang) / 90);
+
+        if (segments < minSegments)
+        {
+            float th = acosf(2 * powf(1 - 0.5f / radius, 2) - 1);
+            segments = (int)((end_ang - start_ang) * ceilf(2 * PI / th) / 360);
+
+            if (segments <= 0)
+                segments = minSegments;
+        }
+
+        float stepLength   = (end_ang - start_ang) / (float)segments;
+        float angle        = start_ang;
+
+        ray::rlBegin(RL_LINES);
+        for (int i = 0; i < segments; i++)
+        {
+            ray::rlColor4ub(clr.r, clr.g, clr.b, clr.a);
+
+            ray::rlVertex2f(center.x + cosf(DEG2RAD * angle) * radius, center.y + sinf(DEG2RAD * angle) * radius);
+            ray::rlVertex2f(center.x + cosf(DEG2RAD * (angle + stepLength)) * radius,
+                            center.y + sinf(DEG2RAD * (angle + stepLength)) * radius);
+
+            angle += stepLength;
+        }
+        ray::rlEnd();
+    }
+
+    void renderer_impl::draw_rectangle(Rectf rc, color clr)
+    {
+        Vec2f pts[4];
+        pts[0] = rc.min;
+        pts[1] = {rc.min.x, rc.max.y};
+        pts[2] = rc.max;
+        pts[3] = {rc.max.x, rc.min.y};
+        draw_polyline(pts, 4, true, clr);
+    }
+
+    void renderer_impl::draw_ellipse(Rectf rc, color clr)
+    {
+        const float radiusH = (rc.max.x - rc.min.x) * 0.5f;
+        const float radiusV = (rc.max.y - rc.min.y) * 0.5f;
+        const float centerX = radiusH + rc.min.x;
+        const float centerY = radiusV + rc.min.y;
+        ray::rlBegin(RL_LINES);
+        for (int i = 0; i < 360; i += 10)
+        {
+            ray::rlColor4ub(clr.r, clr.g, clr.b, clr.a);
+            ray::rlVertex2f(centerX + cosf(DEG2RAD * (i + 10)) * radiusH, centerY + sinf(DEG2RAD * (i + 10)) * radiusV);
+            ray::rlVertex2f(centerX + cosf(DEG2RAD * i) * radiusH, centerY + sinf(DEG2RAD * i) * radiusV);
+        }
+        ray::rlEnd();
+    }
+
+    void renderer_impl::enable_scissor_test(const Recti& scissor)
+    {
+        ray::BeginScissorMode(scissor.min.x, scissor.min.y, scissor.width(), scissor.height());
+    }
 
 	void renderer_impl::enable_render_texture(const render_texture* rt)
 	{

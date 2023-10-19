@@ -2,6 +2,8 @@
 
 #include "Vec.hpp"
 #include "Rect.hpp"
+#include "Scene.hpp"
+#include <span>
 
 namespace box
 {
@@ -76,7 +78,7 @@ namespace box
         Vec2i    _size;
     };
 
-    class renderer
+    class renderer : system
     {
     public:
         virtual ~renderer()                                                                              = default;
@@ -93,6 +95,35 @@ namespace box
         virtual mesh            begin_mesh(uint32_t vertex)                                              = 0;
         virtual void            end_mesh(const mesh& mesh)                                               = 0;
         virtual render_texture* load_render_texture(uint32_t width, uint32_t height, bool depth = false) = 0;
+
+        virtual void            draw_line(Vec2f p1, Vec2f p2, color clr)                                 = 0;
+        virtual void            draw_polyline(const Vec2f* p, size_t size, bool closed, color clr)       = 0;
+        virtual void            draw_circle_segment(Vec2f    center,
+                                                    float    radius,
+                                                    color    clr,
+                                                    uint32_t segments,
+                                                    float    start_ang = 0.f,
+                                                    float    end_ang   = 360.f)                          = 0;
+        virtual void            draw_rectangle(Rectf rc, color clr)                                      = 0;
+        virtual void            draw_ellipse(Rectf rc, color clr)                                        = 0;
     };
 
+    struct mesh_renderer : component
+    {
+        void set_mesh(const vertex* vtx, size_t size);
+
+        const vertex*       _corners;
+        size_t              _size;
+        uint32_t            _depth;
+        asset_ref<texture>  _texture;
+        asset_ref<material> _material;
+    };
+
+
+
+    inline void mesh_renderer::set_mesh(const vertex* vtx, size_t size)
+    {
+        _corners = vtx;
+        _size    = size;
+    }
 } // namespace box

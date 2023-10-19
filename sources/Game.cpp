@@ -13,16 +13,7 @@ namespace box
         ~null_pugin() override = default;
     } null_p;
 
-    struct str : component_for_t<str>
-    {
-        std::string _str{"test"};
-    };
-
-    struct flag : component_for_t<flag>
-    {
-    };
-
-	game_impl::game_impl() : _plugin(&null_p)
+	game_impl::game_impl() : _plugin(&null_p), _scene(*this)
 	{
 	}
 
@@ -68,19 +59,20 @@ namespace box
     void game_impl::on_frame_begin()
     {
         get_plugin().on_frame_begin(*this, ray::GetFrameTime());
-        _scene.on_frame_begin(*this, ray::GetFrameTime());
+        _scene.on_frame_begin(ray::GetFrameTime());
     }
 
     void game_impl::on_frame_end()
     {
-        _scene.on_frame_end(*this);
+        _scene.on_frame_end();
         get_plugin().on_frame_end(*this);
     }
 
     int32_t game_impl::run(const char* v[], int32_t c)
-	{
+    {
+        ray::SetConfigFlags(ray::FLAG_MSAA_4X_HINT | ray::FLAG_VSYNC_HINT);
         ray::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
-        ray::SetTargetFPS(60);
+      //  ray::SetTargetFPS(60);
 
         init(v, c);
         _renderer.init();
@@ -92,31 +84,13 @@ namespace box
 		{
 			auto tex = _assets.load_texture(ASSETS_PATH"test.png");
 
-			auto eid1 = _scene.create();
-			auto eid2 = _scene.create();
-			auto eid3 = _scene.create();
 
-			str* comp = static_cast<str*>(_scene.emplace(eid1, "tst"));
-			_scene.emplace(eid1, "flg");
-			_scene.emplace(eid2, "flg");
-			_scene.emplace(eid3, "tst");
-			_scene.emplace(eid3, "flg");
-
-			auto sz = _scene.view("tst", "flg");
-			auto sz2 = _scene.view("flg");
-            auto sz3 = sz.combine(sz2);
-
-
-			for (entity_id id : sz)
-			{
-				id = id;
-			}
 
 			while (!ray::WindowShouldClose())
 			{
                 on_frame_begin();
 
-				_scene.update(*this, ray::GetFrameTime());
+				_scene.update(ray::GetFrameTime());
 
 
 				Recti scissor(100, 100, 1000, 1000);
@@ -164,6 +138,10 @@ namespace box
 
 				ray::DrawFPS(10, 10);
 
+				_renderer.draw_circle_segment({800, 800}, 60, {255, 25, 25, 255}, 0);
+				_renderer.draw_rectangle({500, 400, 700, 480}, {255, 25, 255, 255});
+                _renderer.draw_ellipse({300, 500, 400, 550}, {25, 25, 255, 255});
+
 				ray::EndDrawing();
 
 				on_frame_end();
@@ -197,10 +175,6 @@ namespace box
         {
             _plugin = &null_p;
 		}
-
-        auto nfo1 = _scene.register_component<str>("test","tst");
-        auto nfo2 = _scene.register_component<flag>("flag","flg");
-        auto nfo3 = component_for_t<str>::definition;
     }
 
 }

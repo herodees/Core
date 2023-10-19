@@ -102,6 +102,7 @@ namespace box
         virtual bool       get_view(scene_view<1>* target, const tag_id* tags, size_t count) const                 = 0;
         virtual bool       get_view(scene_view<1>* target, const std::string_view* components, size_t count) const = 0;
         virtual system*    get_system(std::string_view sys) const                                                  = 0;
+        virtual game&      get_game() const                                                                        = 0;
 
         auto view(std::convertible_to<std::string_view> auto&&... s);
         auto view(std::convertible_to<tag_id> auto&&... s);
@@ -117,11 +118,13 @@ namespace box
         system()          = default;
         virtual ~system() = default;
     
-        virtual void on_scene_begin(game& game){};
-        virtual void on_scene_end(game& game){};
-        virtual void on_frame_begin(game& game, float delta_time){};
-        virtual void on_frame_end(game& game){};
-        virtual void update(game& game, float delta) = 0;
+        virtual void init(scene& scn){};
+        virtual void deinit(scene& scn){};
+        virtual void on_scene_begin(scene& scn){};
+        virtual void on_scene_end(scene& scn){};
+        virtual void on_frame_begin(scene& scn, float delta_time){};
+        virtual void on_frame_end(scene& scn){};
+        virtual void update(scene& scn, float delta) = 0;
     };
 
 

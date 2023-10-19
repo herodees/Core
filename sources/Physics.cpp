@@ -18,6 +18,19 @@ namespace box
         }
     }
 
+    void physics_impl::init(scene& scn)
+    {
+        scene_impl& scene = static_cast<scene_impl&>(scn);
+
+        scene.register_component<rigid_body>("Rigidbody", "rigidbody");
+        scene.register_component<circle_collider>("Circle collider", "circle_collider");
+        scene.get_registry().on_construct<circle_collider>().connect<&entt::registry::emplace_or_replace<rigid_body>>();
+        scene.register_component<segment_collider>("Line segment collider", "segment_collider");
+        scene.get_registry().on_construct<segment_collider>().connect<&entt::registry::emplace_or_replace<rigid_body>>();
+        scene.register_component<polygon_collider>("Polygon collider", "polygon_collider");
+        scene.get_registry().on_construct<polygon_collider>().connect<&entt::registry::emplace_or_replace<rigid_body>>();
+    }
+
     void physics_impl::set_gravity(Vec2f gravity)
     {
         _space.gravity.x = gravity.x;
@@ -39,7 +52,7 @@ namespace box
         return _space.damping;
     }
 
-    void physics_impl::update(game& game, float delta)
+    void physics_impl::update(scene& scn, float delta)
     {
         constexpr float step_time = 0.0166666666f;
         _curent_time += delta;
@@ -240,5 +253,69 @@ namespace box
     }
 
 
+
+    void circle_collider::setup(float radius, Vec2f offset)
+    {
+        _shape.c.x                 = offset.x;
+        _shape.c.y                 = offset.y;
+        _shape.r                   = radius;
+        _shape.shape.massInfo.m    = 0;
+        _shape.shape.massInfo.i    = cpMomentForCircle(1.0f, 0.0f, radius, cpvzero);
+        _shape.shape.massInfo.cog  = _shape.c;
+        _shape.shape.massInfo.area = cpAreaForCircle(0.0f, radius);
+    }
+
+    void segment_collider::setup(Vec2f a, Vec2f b, float r)
+    {
+        _shape.a.x = a.x;
+        _shape.a.y = a.y;
+        _shape.b.x = b.x;
+        _shape.b.y = b.y;
+        _shape.n   = cpvrperp(cpvnormalize(cpvsub(_shape.b, _shape.a)));
+        _shape.r = r;
+        _shape.a_tangent = cpvzero;
+        _shape.b_tangent = cpvzero;
+        _shape.shape.massInfo.m = 0;
+        _shape.shape.massInfo.i    = cpMomentForBox(1.0f, cpvdist(_shape.a, _shape.b) + 2.0f * r, 2.0f * r);
+        _shape.shape.massInfo.cog  = cpvlerp(_shape.a, _shape.b, 0.5f);
+        _shape.shape.massInfo.area = cpAreaForSegment(_shape.a, _shape.b, r);
+    }
+
+    void polygon_collider::setup(const Vec2f* verts, size_t count, float radius)
+    {
+        cpVect* hullVerts = (cpVect*)alloca(count * sizeof(cpVect));
+        for (size_t i = 0; i < count; ++i)
+        {
+            hullVerts[i].x = verts[i].x;
+            hullVerts[i].y = verts[i].y;
+        }
+        uint32_t hullCount = cpConvexHull(count, hullVerts, hullVerts, nullptr, 0.0f);
+        
+        cpVect centroid = cpCentroidForPoly(count, hullVerts);
+        _shape.shape.massInfo.m     = 0;
+        _shape.shape.massInfo.i     = cpMomentForPoly(1.0f, count, hullVerts, cpvneg(centroid), radius);
+        _shape.shape.massInfo.cog   = centroid;
+        _shape.shape.massInfo.area  = cpAreaForPoly(count, hullVerts, radius);
+        _shape.r                    = radius;
+        _shape.count                = count;
+
+        if (count <= CP_POLY_SHAPE_INLINE_ALLOC)
+        {
+            _shape.planes = _shape._planes;
+        }
+        else
+        {
+            _shape.planes = (struct cpSplittingPlane*)cpcalloc(2 * count, sizeof(struct cpSplittingPlane));
+        }
+
+        for (int i = 0; i < count; i++)
+        {
+            cpVect a = hullVerts[(i - 1 + count) % count];
+            cpVect b = hullVerts[i];
+            cpVect n = cpvnormalize(cpvrperp(cpvsub(b, a)));
+            _shape.planes[i + count].v0 = b;
+            _shape.planes[i + count].n  = n;
+        }
+    }
 
 } // namespace box

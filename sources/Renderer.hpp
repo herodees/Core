@@ -89,6 +89,8 @@ namespace box
 		void init();
 		void deinit();
 
+		void update(scene& scn, float delta) override;
+
 		bool begin_2d(const camera& cam, bool depthsort) override;
 		void end_2d() override;
 
@@ -102,6 +104,12 @@ namespace box
 		material* get_material() override;
 		mesh begin_mesh(uint32_t vertex) override;
 		void end_mesh(const mesh& mesh) override;
+
+		void draw_line(Vec2f p1, Vec2f p2, color clr) override;
+        void draw_polyline(const Vec2f* p, size_t size, bool closed, color clr) override;
+        void draw_circle_segment(Vec2f c, float r, color clr, uint32_t segments, float start_ang = 0.f, float end_ang = 360.f) override;
+        void draw_rectangle(Rectf rc, color clr) override;
+        void draw_ellipse(Rectf rc, color clr) override;
 
 		void clear_background(color c) override;
 

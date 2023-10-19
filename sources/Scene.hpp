@@ -16,10 +16,10 @@ namespace box
 	class scene_impl final : public scene
 	{
 	public:
-		scene_impl();
+		scene_impl(game& gme);
 		~scene_impl() override;
 
-		void init();
+        void init();
 
 
         entity_id  create() override;
@@ -36,47 +36,29 @@ namespace box
         bool       get_view(scene_view<1>* target, const tag_id* tags, size_t count) const override;
         bool       get_view(scene_view<1>* target, const std::string_view* components, size_t count) const override;
         system*    get_system(std::string_view sys) const override;
+        game&      get_game() const override;
+
+        const component_definition* find_component_definition(std::string_view id) const;
+        void                        update(float delta_time);
+        void                        on_frame_begin(float delta_time);
+        void                        on_frame_end();
+        entt::registry&             get_registry();
 
         template <typename C>
         const component_definition* register_component(std::string_view name, std::string_view id);
-
         template <typename S>
         const system* register_system(std::string_view name, std::string_view id);
 
-        const component_definition* find_component_definition(std::string_view id) const;
-
-        entt::registry& registry()
-        {
-            return _registry;
-        }
-
-        void update(game& gme, float delta_time);
-        void on_frame_begin(game& gme, float delta_time);
-        void on_frame_end(game& gme);
-
     private:
-		entt::registry _registry;
-		std::vector<entt::sparse_set> _tags{};
+        game&                                                                                       _game;
+        entt::registry                                                                              _registry;
+        std::vector<entt::sparse_set>                                                               _tags{};
         std::unordered_map<std::string, std::unique_ptr<system>, std::string_hash, std::equal_to<>> _systems{};
-        std::unordered_map<std::string, component_definition, std::string_hash, std::equal_to<>> _components{};
+        std::unordered_map<std::string, component_definition, std::string_hash, std::equal_to<>>    _components{};
 	};
 
 
 
-	template <typename T>
-	struct component_for_t : component
-	{
-		static const component_definition* definition;
-
-		static bool contains(entity_id id);
-		static void patch(entity_id id);
-		static void remove(entity_id id);
-		static T* emplace(entity_id id);
-	};
-
-
-
-	template <typename T> const component_definition* component_for_t<T>::definition = nullptr;
 
 	template<typename C>
 	inline const component_definition* scene_impl::register_component(std::string_view name, std::string_view id)
@@ -97,30 +79,10 @@ namespace box
         auto it = _systems.find(id);
         if (it != _systems.end())
             return it->second.get();
-        return _systems.emplace(std::string(id), new S()).first->second.get();
+        auto* sys = _systems.emplace(std::string(id), new S()).first->second.get();
+        sys->init(*this);
+        return sys;
     }
 
-	template<typename T>
-	inline bool component_for_t<T>::contains(entity_id id)
-	{
-		return component_for_t<T>::definition->storage->contains((entt::entity)id);
-	}
 
-	template<typename T>
-	inline void component_for_t<T>::patch(entity_id id)
-	{
-		static_cast<entt::storage_for_t<T>*>(component_for_t<T>::definition->storage)->patch((entt::entity)id);
-	}
-
-	template<typename T>
-	inline void component_for_t<T>::remove(entity_id id)
-	{
-		component_for_t<T>::definition->storage->remove((entt::entity)id);
-	}
-
-	template<typename T>
-	inline T* component_for_t<T>::emplace(entity_id id)
-	{
-		return static_cast<T*>(component_for_t<T>::definition->storage->get((entt::entity)id));
-	}
 }

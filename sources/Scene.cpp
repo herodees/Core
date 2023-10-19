@@ -5,7 +5,7 @@ namespace box
 {
 
 
-	scene_impl::scene_impl()
+	scene_impl::scene_impl(game& gme) : _game(gme)
 	{
 	}
 
@@ -15,9 +15,8 @@ namespace box
 
 	void scene_impl::init()
 	{
-        register_system<physics_impl>("Physics", "physics");
+        auto* physics_sys = register_system<physics_impl>("Physics", "physics");
 
-		register_component<rigid_body>("Rigidbody", "rigidbody");
 
 	}
 
@@ -161,6 +160,11 @@ namespace box
         return it->second.get();
     }
 
+    game& scene_impl::get_game() const
+    {
+        return _game;
+    }
+
     const component_definition* scene_impl::find_component_definition(std::string_view id) const
     {
         auto it = _components.find(id);
@@ -169,28 +173,33 @@ namespace box
         return &it->second;
     }
 
-    void scene_impl::update(game& gme, float delta_time)
+    void scene_impl::update(float delta_time)
     {
         for (auto& it : _systems)
         {
-            it.second->update(gme, delta_time);
+            it.second->update(*this, delta_time);
         }
     }
 
-    void scene_impl::on_frame_begin(game& gme, float delta_time)
+    void scene_impl::on_frame_begin(float delta_time)
     {
         for (auto& it : _systems)
         {
-            it.second->on_frame_begin(gme, delta_time);
+            it.second->on_frame_begin(*this, delta_time);
 		}
     }
 
-    void scene_impl::on_frame_end(game& gme)
+    void scene_impl::on_frame_end()
     {
         for (auto& it : _systems)
         {
-            it.second->on_frame_end(gme);
+            it.second->on_frame_end(*this);
         }
+    }
+
+    entt::registry& scene_impl::get_registry()
+    {
+        return _registry;
     }
 
 }

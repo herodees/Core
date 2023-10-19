@@ -138,13 +138,16 @@ namespace box
 
     struct circle_collider_component : collider_component
     {
+        virtual void setup(float radius, Vec2f offset) = 0;
     };
 
     struct segment_collider_component : collider_component
     {
+        virtual void setup(Vec2f a, Vec2f b, float r) = 0;
     };
 
     struct polygon_collider_component : collider_component
     {
+        virtual void setup(const Vec2f* verts, size_t count, float radius) = 0;
     };
 } // namespace box
