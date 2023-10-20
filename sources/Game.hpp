@@ -31,7 +31,6 @@ namespace box
 
     private:
         plugin*             _plugin;
-        renderer_impl       _renderer;
         asset_provider_impl _assets;
         scene_impl          _scene;
         inputs_impl         _inputs;

@@ -23,7 +23,7 @@ namespace box
 
     renderer& game_impl::get_renderer()
     {
-        return _renderer;
+        return *static_cast<renderer*>(_scene.get_system("renderer"));
     }
 
     asset_provider& game_impl::get_asset()
@@ -70,14 +70,13 @@ namespace box
 
     int32_t game_impl::run(const char* v[], int32_t c)
     {
-        ray::SetConfigFlags(ray::FLAG_MSAA_4X_HINT | ray::FLAG_VSYNC_HINT);
+        ray::SetConfigFlags(ray::FLAG_MSAA_4X_HINT );
         ray::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
-      //  ray::SetTargetFPS(60);
+        ray::SetTargetFPS(60);
 
         init(v, c);
-        _renderer.init();
-        _assets.init(&_renderer);
         _scene.init();
+        _assets.init(&get_renderer());
 
         get_plugin().on_init(*this);
 
@@ -92,7 +91,7 @@ namespace box
 
 				_scene.update(ray::GetFrameTime());
 
-
+				/*
 				Recti scissor(100, 100, 1000, 1000);
 
 				ray::BeginDrawing();
@@ -144,12 +143,14 @@ namespace box
 
 				ray::EndDrawing();
 
+				*/
+
 				on_frame_end();
 			}
 		}
 
         get_plugin().on_deinit(*this);
-		_renderer.deinit();
+        _scene.deinit();
 
 		ray::CloseWindow();
 

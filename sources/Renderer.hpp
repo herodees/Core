@@ -86,8 +86,8 @@ namespace box
 		renderer_impl();
 		~renderer_impl() override;
 
-		void init();
-		void deinit();
+		void init(scene& scn) override;
+        void deinit(scene& scn) override;
 
 		void update(scene& scn, float delta) override;
 

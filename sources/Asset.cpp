@@ -11,19 +11,19 @@ namespace box
 	{
 	}
 
-	void asset_provider_impl::init(renderer_impl* renderer)
+	void asset_provider_impl::init(renderer* renderer)
 	{
 		_renderer = renderer;
 	}
 
 	asset_ref<texture> asset_provider_impl::load_texture(const char* path)
 	{
-		return _renderer->load_texture(path);
+        return static_cast<renderer_impl*>(_renderer)->load_texture(path);
 	}
 
 	asset_ref<material> asset_provider_impl::load_material(const char* path)
 	{
-		return _renderer->load_material(path);
+        return static_cast<renderer_impl*>(_renderer)->load_material(path);
 	}
 
 	asset_ref<sound> asset_provider_impl::load_sound(const char* path)

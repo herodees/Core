@@ -2,16 +2,59 @@
 
 namespace box
 {
-	class physics : public system
+    class physics : public system
     {
     public:
-        physics() = default;
+        static constexpr component_type_info type_info = {"physics", "Physics"};
+
+        physics()          = default;
         virtual ~physics() = default;
 
+        /// Gravity to pass to rigid bodies when integrating velocity.
         virtual void  set_gravity(Vec2f gravity) = 0;
         virtual Vec2f get_gravity() const        = 0;
+
+        /// Damping rate expressed as the fraction of velocity bodies retain each second.
+        /// A value of 0.9 would mean that each body's velocity will drop 10% per second.
+        /// The default value is 1.0, meaning no damping is applied.
         virtual void  set_damping(float damping) = 0;
         virtual float get_damping() const        = 0;
+
+        /// Number of iterations to use in the impulse solver to solve contacts and other constraints.
+        virtual uint32_t get_iterations() const              = 0;
+        virtual void     set_iterations(uint32_t iterations) = 0;
+
+        /// Speed threshold for a body to be considered idle.
+        /// The default value of 0 means to let the space guess a good threshold based on gravity.
+        virtual float get_idle_speed_treshold() const                   = 0;
+        virtual void  set_idle_speed_treshold(float idleSpeedThreshold) = 0;
+
+        /// Time a group of bodies must remain idle in order to fall asleep.
+        /// Enabling sleeping also implicitly enables the the contact graph.
+        /// The default value of INFINITY disables the sleeping algorithm.
+        virtual float get_sleep_time_treshold() const                   = 0;
+        virtual void  set_sleep_time_treshold(float sleepTimeThreshold) = 0;
+
+        /// Amount of encouraged penetration between colliding shapes.
+        /// Used to reduce oscillating contacts and keep the collision cache warm.
+        /// Defaults to 0.1. If you have poor simulation quality,
+        /// increase this number as much as possible without allowing visible amounts of overlap.
+        virtual float get_collision_slop() const              = 0;
+        virtual void  set_collision_slop(float collisionSlop) = 0;
+
+        /// Determines how fast overlapping shapes are pushed apart.
+        /// Expressed as a fraction of the error remaining after each second.
+        /// Defaults to pow(1.0 - 0.1, 60.0) meaning that Chipmunk fixes 10% of overlap each frame at 60Hz.
+        virtual float get_collision_bias() const              = 0;
+        virtual void  set_collision_bias(float collisionBias) = 0;
+
+        /// Number of frames that contact information should persist.
+        /// Defaults to 3. There is probably never a reason to change this value.
+        virtual uint32_t get_collision_persistance() const                        = 0;
+        virtual void     set_collision_persistance(uint32_t collisionPersistence) = 0;
+
+        virtual void add_body(rigid_body_component* body) = 0;
+        virtual void add_collider(collider_component* collider) = 0;
     };
 
     enum class body_type
@@ -23,6 +66,8 @@ namespace box
 
     struct rigid_body_component : component
     {
+        static constexpr component_type_info type_info = {"rigidbody", "Rigidbody"};
+
         virtual ~rigid_body_component() = default;
 
         virtual void      activate(bool act)                                      = 0;
@@ -138,16 +183,22 @@ namespace box
 
     struct circle_collider_component : collider_component
     {
+        static constexpr component_type_info type_info = {"circle_collider", "Circle collider"};
+
         virtual void setup(float radius, Vec2f offset) = 0;
     };
 
     struct segment_collider_component : collider_component
     {
+        static constexpr component_type_info type_info = {"segment_collider", "Line segment collider"};
+
         virtual void setup(Vec2f a, Vec2f b, float r) = 0;
     };
 
     struct polygon_collider_component : collider_component
     {
+        static constexpr component_type_info type_info = {"polygon_collider", "Polygon collider"};
+
         virtual void setup(const Vec2f* verts, size_t count, float radius) = 0;
     };
 } // namespace box

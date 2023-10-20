@@ -22,14 +22,14 @@ namespace box
     {
         scene_impl& scene = static_cast<scene_impl&>(scn);
 
-        scene.register_component<rigid_body>("Rigidbody", "rigidbody");
-        scene.register_component<circle_collider>("Circle collider", "circle_collider");
-        scene.get_registry().on_construct<circle_collider>().connect<&entt::registry::emplace_or_replace<rigid_body>>();
-        scene.register_component<segment_collider>("Line segment collider", "segment_collider");
-        scene.get_registry().on_construct<segment_collider>().connect<&entt::registry::emplace_or_replace<rigid_body>>();
-        scene.register_component<polygon_collider>("Polygon collider", "polygon_collider");
-        scene.get_registry().on_construct<polygon_collider>().connect<&entt::registry::emplace_or_replace<rigid_body>>();
+        scene.register_component<rigid_body>();
+        scene.register_component<circle_collider>();
+        scene.register_component<segment_collider>();
+     //   scene.get_registry().on_construct<segment_collider>().connect<&entt::registry::emplace_or_replace<rigid_body>>();
+        scene.register_component<polygon_collider>();
+     //   scene.get_registry().on_construct<polygon_collider>().connect<&entt::registry::emplace_or_replace<rigid_body>>();
     }
+
 
     void physics_impl::set_gravity(Vec2f gravity)
     {
@@ -52,17 +52,85 @@ namespace box
         return _space.damping;
     }
 
+    uint32_t physics_impl::get_iterations() const
+    {
+        return _space.iterations;
+    }
+
+    void physics_impl::set_iterations(uint32_t iterations)
+    {
+        _space.iterations = iterations;
+    }
+
+    float physics_impl::get_idle_speed_treshold() const
+    {
+        return _space.idleSpeedThreshold;
+    }
+
+    void physics_impl::set_idle_speed_treshold(float idleSpeedThreshold)
+    {
+        _space.idleSpeedThreshold = idleSpeedThreshold;
+    }
+
+    float physics_impl::get_sleep_time_treshold() const
+    {
+        return _space.sleepTimeThreshold;
+    }
+
+    void physics_impl::set_sleep_time_treshold(float sleepTimeThreshold)
+    {
+        _space.sleepTimeThreshold = sleepTimeThreshold;
+    }
+
+    float physics_impl::get_collision_slop() const
+    {
+        return _space.collisionSlop;
+    }
+
+    void physics_impl::set_collision_slop(float collisionSlop)
+    {
+        _space.collisionSlop = collisionSlop;
+    }
+
+    float physics_impl::get_collision_bias() const
+    {
+        return _space.collisionBias;
+    }
+
+    void physics_impl::set_collision_bias(float collisionBias)
+    {
+        _space.collisionBias = collisionBias;
+    }
+
+    uint32_t physics_impl::get_collision_persistance() const
+    {
+        return _space.collisionPersistence;
+    }
+
+    void physics_impl::set_collision_persistance(uint32_t collisionPersistence)
+    {
+        _space.collisionPersistence = collisionPersistence;
+    }
+
+    void physics_impl::add_body(rigid_body_component* body)
+    {
+        cpSpaceAddBody(&_space, &static_cast<rigid_body*>(body)->_body);
+    }
+
+    void physics_impl::add_collider(collider_component* collider)
+    {
+        cpSpaceAddShape(&_space, &static_cast<circle_collider*>(collider)->_shape.shape);
+    }
+
     void physics_impl::update(scene& scn, float delta)
     {
         constexpr float step_time = 0.0166666666f;
         _curent_time += delta;
         while (_curent_time >= step_time)
         {
-            cpSpaceStep(&_space, delta);
+            cpSpaceStep(&_space, step_time);
             _curent_time -= step_time;
         }
-
-        _space.gravity;
     }
 
     void physics_impl::reset()
@@ -72,6 +140,40 @@ namespace box
             cpSpaceDestroy(&_space);
         }
         cpSpaceInit(&_space);
+    }
+
+    void physics_impl::debug_draw(renderer& rnd)
+    {
+        auto draw_circle_proc =
+            [](cpVect            pos,
+               cpFloat           angle,
+               cpFloat           radius,
+               cpSpaceDebugColor outlineColor,
+               cpSpaceDebugColor fillColor,
+               cpDataPointer     data)
+        { 
+            renderer* rnd = (renderer*)(data);
+            rnd->draw_circle_segment({pos}, radius, (const color&)outlineColor, 0);
+        };
+        auto debug_seg_proc = [](cpVect a, cpVect b, cpSpaceDebugColor color, cpDataPointer data) {};
+       auto debug_color_proc = [](cpShape* shape, cpDataPointer data) -> cpSpaceDebugColor
+       {
+            return {25, 25, 25, 255};
+       };
+
+        cpSpaceDebugDrawOptions options{};
+        options.data = &rnd;
+        options.flags = cpSpaceDebugDrawFlags(
+            CP_SPACE_DEBUG_DRAW_SHAPES | CP_SPACE_DEBUG_DRAW_CONSTRAINTS | CP_SPACE_DEBUG_DRAW_COLLISION_POINTS);
+        options.drawCircle = draw_circle_proc;
+        options.colorForShape = debug_color_proc;
+        options.drawSegment       = debug_seg_proc;
+        options.shapeOutlineColor = {255, 25, 25, 255};
+
+
+        cpSpaceDebugDraw(&_space, &options);
+
+    //    rnd.draw_circle_segment({300, 300}, 20, {25, 25, 25, 255},0);
     }
 
     rigid_body::rigid_body()

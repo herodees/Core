@@ -6,6 +6,8 @@ namespace box
     struct component;
     struct camera;
     struct color;
+    struct rigid_body_component;
+    struct collider_component;
     class asset_provider;
     class texture;
     class material;

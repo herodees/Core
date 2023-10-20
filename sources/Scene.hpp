@@ -20,7 +20,7 @@ namespace box
 		~scene_impl() override;
 
         void init();
-
+        void deinit();
 
         entity_id  create() override;
         void       release(entity_id id) override;
@@ -45,9 +45,9 @@ namespace box
         entt::registry&             get_registry();
 
         template <typename C>
-        const component_definition* register_component(std::string_view name, std::string_view id);
+        const component_definition* register_component();
         template <typename S>
-        const system* register_system(std::string_view name, std::string_view id);
+        const system* register_system();
 
     private:
         game&                                                                                       _game;
@@ -61,26 +61,27 @@ namespace box
 
 
 	template<typename C>
-	inline const component_definition* scene_impl::register_component(std::string_view name, std::string_view id)
+	inline const component_definition* scene_impl::register_component()
     {
-        auto it = _components.find(id);
+        auto it = _components.find(C::type_info.id);
         if (it != _components.end())
             return &it->second;
-		C::definition = &_components
-                                 .emplace(std::string(id),
-                                          component_definition{std::string(id), std::string(name), &_registry.storage<C>()})
-                                 .first->second;
-		return C::definition;
+        C::definition = &_components
+                             .emplace(std::string(C::type_info.id),
+                                      component_definition{std::string(C::type_info.id),
+                                                           std::string(C::type_info.name),
+                                                           &_registry.storage<C>()})
+                             .first->second;
+        return C::definition;
     }
 
     template <typename S>
-    inline const system* scene_impl::register_system(std::string_view name, std::string_view id)
+    inline const system* scene_impl::register_system()
     {
-        auto it = _systems.find(id);
+        auto it = _systems.find(S::type_info.id);
         if (it != _systems.end())
             return it->second.get();
-        auto* sys = _systems.emplace(std::string(id), new S()).first->second.get();
-        sys->init(*this);
+        auto* sys = _systems.emplace(std::string(S::type_info.id), new S()).first->second.get();
         return sys;
     }
 

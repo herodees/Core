@@ -78,9 +78,11 @@ namespace box
         Vec2i    _size;
     };
 
-    class renderer : system
+    class renderer : public system
     {
     public:
+        static constexpr component_type_info type_info = {"renderer", "Renderer"};
+
         virtual ~renderer()                                                                              = default;
         virtual void            clear_background(color c)                                                = 0;
         virtual bool            begin_2d(const camera& cam, bool depthsort)                              = 0;
@@ -110,6 +112,8 @@ namespace box
 
     struct mesh_renderer : component
     {
+        static constexpr component_type_info type_info = {"mesh_renderer", "Mesh renderer"};
+
         void set_mesh(const vertex* vtx, size_t size);
 
         const vertex*       _corners;

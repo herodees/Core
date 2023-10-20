@@ -1,5 +1,6 @@
 #include "Renderer.hpp"
 #include "Asset.hpp"
+#include "Physics.hpp"
 
 namespace box
 {
@@ -13,13 +14,30 @@ namespace box
 	{
 	}
 
-	void renderer_impl::init()
+    void renderer_impl::init(scene& scn)
 	{
 	}
 
-	void renderer_impl::deinit()
+	void renderer_impl::deinit(scene& scn)
 	{
 	}
+
+    void renderer_impl::update(scene& scn, float delta)
+    {
+        ray::BeginDrawing();
+
+        clear_background({255, 255, 255, 255});
+
+     //   if (begin_2d(camera(), false))
+        {
+            physics_impl* sys = (physics_impl*)scn.get_system("physics");
+            sys->debug_draw(*this);
+        }
+   //     end_2d();
+
+        ray::DrawFPS(10, 10);
+        ray::EndDrawing();
+    }
 
 	void renderer_impl::clear_background(color c)
 	{
@@ -108,10 +126,6 @@ namespace box
 		_command.depth = 0;
 		_command.material = &_default;
 	}
-
-    void renderer_impl::update(scene& scn, float delta)
-    {
-    }
 
     void renderer_impl::draw_line(Vec2f p1, Vec2f p2, color clr)
     {

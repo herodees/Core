@@ -7,22 +7,39 @@
 
 namespace box
 {
+    struct rigid_body;
+
 	class physics_impl final : public physics
 	{
-	public:
+    public:
         physics_impl();
         ~physics_impl() override;
 
         void init(scene& scn) override;
 
-        void  set_gravity(Vec2f gravity) override;
-        Vec2f get_gravity() const override;
-        void  set_damping(float damping) override;
-        float get_damping() const override;
+        void     set_gravity(Vec2f gravity) override;
+        Vec2f    get_gravity() const override;
+        void     set_damping(float damping) override;
+        float    get_damping() const override;
+        uint32_t get_iterations() const override;
+        void     set_iterations(uint32_t iterations) override;
+        float    get_idle_speed_treshold() const override;
+        void     set_idle_speed_treshold(float idleSpeedThreshold) override;
+        float    get_sleep_time_treshold() const override;
+        void     set_sleep_time_treshold(float sleepTimeThreshold) override;
+        float    get_collision_slop() const override;
+        void     set_collision_slop(float collisionSlop) override;
+        float    get_collision_bias() const override;
+        void     set_collision_bias(float collisionBias) override;
+        uint32_t get_collision_persistance() const override;
+        void     set_collision_persistance(uint32_t collisionPersistence) override;
+        void     add_body(rigid_body_component* body) override;
+        void     add_collider(collider_component* collider) override;
 
         void update(scene& scn, float delta) override;
         void reset();
 
+        void debug_draw(renderer& rnd);
     private:
         cpSpace _space{};
         float   _curent_time{};
@@ -72,7 +89,7 @@ namespace box
         void apply_force_local(Vec2f f, Vec2f r) override;
         void apply_impulse_local(Vec2f j, Vec2f r) override;
 
-        cpBody _body;
+        cpBody _body{};
     };
 
     template <typename T, typename SHAPE>
@@ -106,7 +123,7 @@ namespace box
         collider_filter get_filter() const override;
         void            set_filter(collider_filter filter) override;
 
-        SHAPE _shape;
+        SHAPE _shape{};
     };
 
     struct circle_collider : base_collider<circle_collider_component, cpCircleShape>
@@ -157,6 +174,8 @@ namespace box
     inline void base_collider<T, SHAPE>::set_body(rigid_body_component* body)
     {
         cpShapeSetBody(&_shape.shape, &static_cast<rigid_body*>(body)->_body);
+
+        cpBodyAddShape(&static_cast<rigid_body*>(body)->_body, &_shape.shape);
     }
 
     template <typename T, typename SHAPE>
