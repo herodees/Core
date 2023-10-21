@@ -15,7 +15,8 @@ namespace box
         physics_impl();
         ~physics_impl() override;
 
-        void init(scene& scn) override;
+        static physics_impl& active();
+        void     activate();
 
         void     set_gravity(Vec2f gravity) override;
         Vec2f    get_gravity() const override;
@@ -36,10 +37,13 @@ namespace box
         void     add_body(rigid_body_component* body) override;
         void     add_collider(collider_component* collider) override;
 
-        void update(scene& scn, float delta) override;
-        void reset();
+        void     init(scene& scn) override;
+        void     update(scene& scn, float delta) override;
+        void     reset();
+        cpSpace& space();
 
-        void debug_draw(renderer& rnd);
+        void     debug_draw(renderer& rnd);
+
     private:
         cpSpace _space{};
         float   _curent_time{};
@@ -162,6 +166,7 @@ namespace box
     inline base_collider<polygon_collider_component, cpPolyShape>::base_collider()
     {
         cpPolyShapeInit(&_shape, nullptr, 0, nullptr, {}, 0);
+        cpShapeSetBody(&_shape.shape, physics_impl::active().space().staticBody);
     }
 
     template <typename T, typename SHAPE>
@@ -174,7 +179,6 @@ namespace box
     inline void base_collider<T, SHAPE>::set_body(rigid_body_component* body)
     {
         cpShapeSetBody(&_shape.shape, &static_cast<rigid_body*>(body)->_body);
-
         cpBodyAddShape(&static_cast<rigid_body*>(body)->_body, &_shape.shape);
     }
 

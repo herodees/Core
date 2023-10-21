@@ -24,11 +24,10 @@ namespace box
             it.second->init(*this);
         }
 
-
 		_game.get_physics().set_gravity({0, 300});
         _game.get_physics().set_iterations(1);
-        //    _game.get_physics().set_sleep_time_treshold(0.5f);
-            _game.get_physics().set_collision_slop(0.5f);
+        _game.get_physics().set_sleep_time_treshold(0.5f);
+        _game.get_physics().set_collision_slop(0.5f);
 
 		auto item_create = [&](float x, float y, float r, float fr, bool stat)
         {
@@ -41,13 +40,11 @@ namespace box
             body->set_type(stat ? body_type::STATIC : body_type::DYNAMIC);
 
             auto collider = scene::emplace<circle_collider_component>(ent);
-            collider->setup(r, {0, 0});
             collider->set_body(body);
+            collider->setup(r, {0, 0});
             collider->set_elasticity(0.699);
             collider->set_friction(1.f);
-
-            _game.get_physics().add_body(body);
-            _game.get_physics().add_collider(collider);
+          
 		};
         item_create(461, 50, 20, 10, false);
         item_create(501, 50, 20, 10, false);

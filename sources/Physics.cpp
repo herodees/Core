@@ -5,8 +5,11 @@ namespace box
 {
     const component_definition* rigid_body::definition = nullptr;
 
+    static physics_impl* s_physics = nullptr;
+
     physics_impl::physics_impl()
     {
+        activate();
         reset();
     }
 
@@ -16,6 +19,11 @@ namespace box
         {
             cpSpaceDestroy(&_space);
         }
+    }
+
+    physics_impl& physics_impl::active()
+    {
+        return *s_physics;
     }
 
     void physics_impl::init(scene& scn)
@@ -30,6 +38,11 @@ namespace box
      //   scene.get_registry().on_construct<polygon_collider>().connect<&entt::registry::emplace_or_replace<rigid_body>>();
     }
 
+
+    void physics_impl::activate()
+    {
+        s_physics = this;
+    }
 
     void physics_impl::set_gravity(Vec2f gravity)
     {
@@ -142,6 +155,11 @@ namespace box
         cpSpaceInit(&_space);
     }
 
+    cpSpace& physics_impl::space()
+    {
+        return _space;
+    }
+
     void physics_impl::debug_draw(renderer& rnd)
     {
         auto draw_circle_proc =
@@ -172,22 +190,27 @@ namespace box
 
 
         cpSpaceDebugDraw(&_space, &options);
-
-    //    rnd.draw_circle_segment({300, 300}, 20, {25, 25, 25, 255},0);
     }
 
     rigid_body::rigid_body()
     {
         cpBodyInit(&_body, 0.f, 0.f);
+        if (!_body.space)
+            cpSpaceAddBody(&s_physics->space(), &_body);
     }
 
     rigid_body::~rigid_body()
     {
+        if (!_body.space)
+            cpSpaceRemoveBody(&s_physics->space(), &_body);
         cpBodyDestroy(&_body);
     }
 
     void rigid_body::activate(bool act)
     {
+        if (get_type() != body_type::DYNAMIC)
+            return;
+
         if (act)
             cpBodyActivate(&_body);
         else
@@ -365,6 +388,11 @@ namespace box
         _shape.shape.massInfo.i    = cpMomentForCircle(1.0f, 0.0f, radius, cpvzero);
         _shape.shape.massInfo.cog  = _shape.c;
         _shape.shape.massInfo.area = cpAreaForCircle(0.0f, radius);
+
+        if (!_shape.shape.space)
+        {
+            cpSpaceAddShape(&s_physics->space(), &_shape.shape);
+        }
     }
 
     void segment_collider::setup(Vec2f a, Vec2f b, float r)
@@ -381,6 +409,11 @@ namespace box
         _shape.shape.massInfo.i    = cpMomentForBox(1.0f, cpvdist(_shape.a, _shape.b) + 2.0f * r, 2.0f * r);
         _shape.shape.massInfo.cog  = cpvlerp(_shape.a, _shape.b, 0.5f);
         _shape.shape.massInfo.area = cpAreaForSegment(_shape.a, _shape.b, r);
+
+        if (!_shape.shape.space)
+        {
+            cpSpaceAddShape(&s_physics->space(), &_shape.shape);
+        }
     }
 
     void polygon_collider::setup(const Vec2f* verts, size_t count, float radius)
@@ -417,6 +450,11 @@ namespace box
             cpVect n = cpvnormalize(cpvrperp(cpvsub(b, a)));
             _shape.planes[i + count].v0 = b;
             _shape.planes[i + count].n  = n;
+        }
+
+        if (!_shape.shape.space)
+        {
+            cpSpaceAddShape(&s_physics->space(), &_shape.shape);
         }
     }
 
