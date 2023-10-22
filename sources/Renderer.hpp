@@ -72,6 +72,33 @@ namespace box
 
 
 
+	class atlas_impl : public atlas
+    {
+		struct sprite
+        {
+            std::string id;
+            Rectu       region;
+            Vec2i       origin;
+        };
+    public:
+        atlas_impl();
+        ~atlas_impl() override;
+        bool                      save(const char* path) override;
+        bool                      load(const char* path) override;
+        uint32_t                  size() const override;
+        const asset_ref<texture>& get_texture() const override;
+        uint32_t                  get_sprite(std::string_view sprite) const override;
+        Rectu                     get_sprite(uint32_t sprite) const override;
+        Vec2i                     get_origin(uint32_t sprite) const override;
+
+	private:
+        std::vector<sprite> _sprites;
+        asset_ref<texture>  _texture;
+        ray::Image          _atlas;
+    };
+
+
+
 	class renderer_impl final : public renderer
 	{
 		struct command

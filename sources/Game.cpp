@@ -68,9 +68,15 @@ namespace box
         get_plugin().on_frame_end(*this);
     }
 
+    void game_impl::on_update()
+    {
+        get_plugin().on_step(*this);
+        _scene.update(ray::GetFrameTime());
+    }
+
     int32_t game_impl::run(const char* v[], int32_t c)
     {
-        ray::SetConfigFlags(ray::FLAG_MSAA_4X_HINT );
+    //    ray::SetConfigFlags(ray::FLAG_MSAA_4X_HINT );
         ray::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
         ray::SetTargetFPS(60);
 
@@ -79,81 +85,16 @@ namespace box
         _assets.init(&get_renderer());
 
         get_plugin().on_init(*this);
-
-		{
-			auto tex = _assets.load_texture(ASSETS_PATH"test.png");
-
-
-
-			while (!ray::WindowShouldClose())
-			{
-                on_frame_begin();
-
-				_scene.update(ray::GetFrameTime());
-
-				/*
-				Recti scissor(100, 100, 1000, 1000);
-
-				ray::BeginDrawing();
-				_renderer.clear_background({ 255,255,255,255 });
-				_renderer.begin_2d(camera(), false);
-				_renderer.enable_scissor_test(scissor);
-
-				auto draw = [&](Vec2f pos, uint32_t d)
-				{
-					_renderer.set_texture(tex);
-					_renderer.set_depth(d);
-					auto mesh = _renderer.begin_mesh(6);
-
-					mesh.vertex[0].position = { pos.x + 0.f, pos.y + 0.f };
-					mesh.vertex[1].position = { pos.x + 0.f, pos.y + 100.f };
-					mesh.vertex[2].position = { pos.x + 100.f, pos.y + 100.f };
-					mesh.vertex[3].position = { pos.x + 100.f, pos.y + 0.f };
-
-					mesh.vertex[0].tex_coord = { 0.f, 0.f };
-					mesh.vertex[1].tex_coord = { 0.f, 1.f };
-					mesh.vertex[2].tex_coord = { 1.f, 1.f };
-					mesh.vertex[3].tex_coord = { 1.f, 0.f };
-
-					mesh.vertex[0].color = { 255,255,255,255 };
-					mesh.vertex[1].color = { 255,255,255,255 };
-					mesh.vertex[2].color = { 255,255,255,255 };
-					mesh.vertex[3].color = { 255,255,255,255 };
-
-					mesh.vertex[4] = mesh.vertex[0];
-					mesh.vertex[5] = mesh.vertex[2];
-
-					mesh.vertex_size += 6;
-
-					_renderer.end_mesh(mesh);
-				};
-
-				for (int i = 0; i < 1000; ++i)
-				{
-					draw({ i * 50.f, i * 50.f }, 1000 - i);
-				}
-
-				_renderer.end_2d();
-
-				ray::DrawFPS(10, 10);
-
-				_renderer.draw_circle_segment({800, 800}, 60, {255, 25, 25, 255}, 0);
-				_renderer.draw_rectangle({500, 400, 700, 480}, {255, 25, 255, 255});
-                _renderer.draw_ellipse({300, 500, 400, 550}, {25, 25, 255, 255});
-
-				ray::EndDrawing();
-
-				*/
-
-				on_frame_end();
-			}
-		}
-
+        while (!ray::WindowShouldClose())
+        {
+            on_frame_begin();
+            on_update();
+            on_frame_end();
+        }
         get_plugin().on_deinit(*this);
         _scene.deinit();
 
 		ray::CloseWindow();
-
         return 0;
 	}
 

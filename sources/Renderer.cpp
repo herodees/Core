@@ -574,4 +574,86 @@ namespace box
 		return _id > 0;
 	}
 
-}
+
+	atlas_impl::atlas_impl()
+    {
+    }
+
+    atlas_impl::~atlas_impl()
+    {
+    }
+
+    uint32_t atlas_impl::size() const
+    {
+        return uint32_t(_sprites.size());
+    }
+
+    const asset_ref<texture>& atlas_impl::get_texture() const
+    {
+        return _texture;
+    }
+
+    uint32_t atlas_impl::get_sprite(std::string_view sprite) const
+    {
+		for (auto& spr : _sprites)
+		{
+			if (spr.id == sprite)
+			{
+                return std::distance(_sprites.data(), &spr);
+			}
+		}
+        return 0;
+    }
+
+    Rectu atlas_impl::get_sprite(uint32_t sprite) const
+    {
+        if (!sprite || sprite >= _sprites.size())
+            return Rectu();
+        return _sprites[sprite].region;
+    }
+
+    Vec2i atlas_impl::get_origin(uint32_t sprite) const
+    {
+        if (!sprite || sprite >= _sprites.size())
+            return Vec2i();
+        return _sprites[sprite].origin;
+    }
+
+    bool atlas_impl::save(const char* path)
+	{
+        return false;
+	};
+
+    bool atlas_impl::load(const char* path)
+	{
+        int32_t data_size{};
+		auto* data = ray::LoadFileData(path, &data_size);
+
+        var doc;
+		if (var_error::ok != doc.from_string(reinterpret_cast<const char*>(data)))
+		{
+            ray::MemFree(data);
+            return false;
+		}
+        ray::MemFree(data);
+
+		auto sprites = doc.get_item("sprites");
+        _sprites.clear();
+        _sprites.reserve(sprites.size());
+        for (auto el : sprites.elements())
+        {
+            auto& spr        = _sprites.emplace_back();
+            spr.id           = el.get_item("id").str();
+            spr.origin.x     = el.get_item("ox").get(0);
+            spr.origin.y     = el.get_item("oy").get(0);
+            spr.region.min.x = el.get_item("x").get(0);
+            spr.region.min.y = el.get_item("y").get(0);
+            spr.region.max.x = spr.region.min.x + el.get_item("w").get(0);
+            spr.region.max.y = spr.region.min.y + el.get_item("h").get(0);
+        }
+
+        auto image = doc.get_item("image").c_str();
+
+		return true;
+	};
+} // namespace box

@@ -20,6 +20,7 @@ namespace box
     class system;
     class game;
     class physics;
+    class tileset;
     class render_texture;
     enum class blend_mode;
     enum class uniform_type;

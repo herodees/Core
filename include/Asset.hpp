@@ -46,38 +46,6 @@ namespace box
     };
 
 
-    class texture : public asset
-    {
-    public:
-        virtual ~texture() = default;
-        const Vec2i& size() const
-        {
-            return _size;
-        }
-        uint32_t handle() const
-        {
-            return _id;
-        }
-        int32_t get_format() const
-        {
-            return _format;
-        }
-        int32_t get_mipmaps() const
-        {
-            return _mipmaps;
-        }
-        virtual void set_filter(uint32_t filter) = 0;
-        virtual void set_wrap(uint32_t wrap)     = 0;
-        virtual void generate_mipmap()           = 0;
-
-    protected:
-        uint32_t _id{};
-        Vec2i    _size{};
-        int32_t  _mipmaps{};
-        int32_t  _format{};
-    };
-
-
     class sound : public asset
     {
     public:
@@ -163,14 +131,5 @@ namespace box
     };
 
 
-    class asset_provider
-    {
-    public:
-        virtual ~asset_provider() = default;
 
-        virtual asset_ref<texture>   load_texture(const char* path)   = 0;
-        virtual asset_ref<material>  load_material(const char* path)  = 0;
-        virtual asset_ref<sound>     load_sound(const char* path)     = 0;
-        virtual asset_ref<prototype> load_prototype(const char* path) = 0;
-    };
 } // namespace box

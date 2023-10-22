@@ -168,15 +168,6 @@ namespace box
 
 
 
-    class entity
-    {
-    public:
-        scene*    _scene;
-        entity_id _entity;
-    };
-
-
-
     template <typename T, size_t S>
     inline auto scene::view(std::initializer_list<T>&& list)
     {

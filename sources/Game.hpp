@@ -28,6 +28,7 @@ namespace box
     private:
         void on_frame_begin();
         void on_frame_end();
+        void on_update();
 
     private:
         plugin*             _plugin;

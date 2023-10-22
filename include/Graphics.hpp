@@ -61,6 +61,58 @@ namespace box
         uint32_t vertex_size{};
     };
 
+    class texture : public asset
+    {
+    public:
+        virtual ~texture() = default;
+        const Vec2i& size() const
+        {
+            return _size;
+        }
+        uint32_t handle() const
+        {
+            return _id;
+        }
+        int32_t get_format() const
+        {
+            return _format;
+        }
+        int32_t get_mipmaps() const
+        {
+            return _mipmaps;
+        }
+        virtual void set_filter(uint32_t filter) = 0;
+        virtual void set_wrap(uint32_t wrap)     = 0;
+        virtual void generate_mipmap()           = 0;
+
+    protected:
+        uint32_t _id{};
+        Vec2i    _size{};
+        int32_t  _mipmaps{};
+        int32_t  _format{};
+    };
+
+    class tileset : public asset
+    {
+    public:
+        virtual ~tileset()                                                     = default;
+        virtual uint32_t                  size() const                         = 0;
+        virtual Vec2u                     get_tile_size() const                = 0;
+        virtual const asset_ref<texture>& get_texture() const                  = 0;
+        virtual Vec2u                     get_tile(uint32_t tile) const        = 0;
+    };
+
+    class atlas : public asset
+    {
+    public:
+        virtual ~atlas() = default;
+        virtual uint32_t                  size() const                              = 0;
+        virtual const asset_ref<texture>& get_texture() const                       = 0;
+        virtual Rectu                     get_sprite(uint32_t sprite) const         = 0;
+        virtual uint32_t                  get_sprite(std::string_view sprite) const = 0;
+        virtual Vec2i                     get_origin(uint32_t sprite) const         = 0;
+    };
+
     class render_texture
     {
     public:
