@@ -14,11 +14,18 @@ namespace box
         void update(scene& scn, float delta) override;
     };
 
+    struct tileset_chunk
+    {
+        std::vector<uint16_t> _tiles;
+    };
+
     struct tileset_layer : tileset_layer_component
     {
         static const component_definition* definition;
 
         int32_t _order{};
+        std::vector<tileset_chunk*>    _active_chunks;
+        std::map<Vec2i, tileset_chunk> _chumks;
     };
 
 } // namespace box
