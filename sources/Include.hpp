@@ -8,6 +8,15 @@
 #include <algorithm>
 #include <execution>
 
+#pragma warning(push)
+#pragma warning(disable : 4820)
+#pragma warning(disable : 4868)
+#pragma warning(disable : 4996)
+#pragma warning(disable : 4244) 
+#pragma warning(disable : 4464)
+#pragma warning(disable : 5045)
+#pragma warning(disable : 5264)
+
 #include <imgui.h>
 #include <entt/entt.hpp>
 
@@ -17,6 +26,8 @@ namespace ray
 #include "rlgl.h"
 #include "raymath.h"
 }
+#pragma warning(pop)
+
 
 namespace std
 {

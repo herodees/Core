@@ -9,7 +9,7 @@ namespace box
 	class material_impl final : public material
 	{
 	public:
-		material_impl(renderer_impl* r);
+		material_impl();
 		~material_impl() override = default;
 
 		bool save(const char* path) override;
@@ -24,7 +24,6 @@ namespace box
 		bool compile();
 
 	protected:
-		renderer_impl* _renderer{};
 		blend_mode _blend_mode{ blend_mode::ALPHA };
 		ray::Shader _shader{};
 		std::string _fragment;
@@ -37,7 +36,7 @@ namespace box
 	{
 		friend class renderer_impl;
 	public:
-		texture_impl(renderer_impl* r);
+		texture_impl();
 		~texture_impl() override;
 		void attach(const ray::Texture& txt);
 		void set_filter(uint32_t filter) override;
@@ -47,39 +46,32 @@ namespace box
 		bool load(const char* path) override;
 
 		ray::Texture get() const;
-
-	protected:
-		renderer_impl* _renderer;
 	};
 
 
 
 	class render_texture_impl final : public render_texture
-	{
-	public:
-		render_texture_impl(renderer_impl* r);
-		~render_texture_impl() override;
-		const texture& get_texture() const override;
-		const texture& get_depth() const override;
-		bool create(uint32_t width, uint32_t height, bool depth = false) override;
-
-		ray::RenderTexture get() const;
-
-	protected:
-		texture_impl _texture;
-		texture_impl _depth;
-	};
-
-
-
-	class atlas_impl : public atlas
     {
-		struct sprite
-        {
-            std::string id;
-            Rectu       region;
-            Vec2i       origin;
-        };
+    public:
+        render_texture_impl();
+        ~render_texture_impl() override;
+        bool           save(const char* path) override;
+        bool           load(const char* path) override;
+        const texture& get_texture() const override;
+        const texture& get_depth() const override;
+        bool           create(uint32_t width, uint32_t height, bool depth = false) override;
+
+        ray::RenderTexture get() const;
+
+    protected:
+        texture_impl _texture;
+        texture_impl _depth;
+    };
+
+
+
+	class atlas_impl final : public atlas
+    {
     public:
         atlas_impl();
         ~atlas_impl() override;
@@ -88,13 +80,19 @@ namespace box
         uint32_t                  size() const override;
         const asset_ref<texture>& get_texture() const override;
         uint32_t                  get_sprite(std::string_view sprite) const override;
-        Rectu                     get_sprite(uint32_t sprite) const override;
-        Vec2i                     get_origin(uint32_t sprite) const override;
+        const sprite*             get_sprite(uint32_t sprite) const override;
+        Vec2u                     get_space() const override;
+        Vec2u                     get_margin() const override;
+        Vec2u                     get_tile_size() const override;
 
 	private:
-        std::vector<sprite> _sprites;
-        asset_ref<texture>  _texture;
-        ray::Image          _atlas;
+        std::vector<sprite>                                                          _sprites;
+        std::unordered_map<std::string, uint32_t, std::string_hash, std::equal_to<>> _sprite_names{};
+        asset_ref<texture>                                                           _texture;
+        Vec2u                                                                        _tile_size;
+        Vec2u                                                                        _margin;
+        Vec2u                                                                        _space;
+        ray::Image                                                                   _atlas;
     };
 
 
@@ -140,9 +138,7 @@ namespace box
 
 		void clear_background(color c) override;
 
-		texture_impl* load_texture(const char* path);
-		material_impl* load_material(const char* path);
-		render_texture* load_render_texture(uint32_t width, uint32_t height, bool depth = false) override;
+        asset_ref<render_texture> create_render_texture(uint32_t width, uint32_t height, bool depth = false) override;
 
 	protected:
 		void new_command();

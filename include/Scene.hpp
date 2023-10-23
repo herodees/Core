@@ -92,6 +92,7 @@ namespace box
         virtual void       release(entity_id id)                                                                   = 0;
         virtual bool       is_valid(entity_id id) const                                                            = 0;
         virtual component* emplace(entity_id id, std::string_view component)                                       = 0;
+        virtual component* get_component(entity_id id, std::string_view component)                                 = 0;
         virtual void       remove(entity_id id, std::string_view component)                                        = 0;
         virtual bool       contains(entity_id id, std::string_view component) const                                = 0;
         virtual bool       contains(entity_id id, const Storage** storage, size_t count) const                     = 0;

@@ -51,8 +51,8 @@ namespace box
     struct vertex
     {
         Vec2f position;
-        color color;
         Vec2f tex_coord;
+        color color;
     };
 
     struct mesh
@@ -65,22 +65,10 @@ namespace box
     {
     public:
         virtual ~texture() = default;
-        const Vec2i& size() const
-        {
-            return _size;
-        }
-        uint32_t handle() const
-        {
-            return _id;
-        }
-        int32_t get_format() const
-        {
-            return _format;
-        }
-        int32_t get_mipmaps() const
-        {
-            return _mipmaps;
-        }
+        const Vec2i& size() const;
+        uint32_t     handle() const;
+        int32_t      get_format() const;
+        int32_t      get_mipmaps() const;
         virtual void set_filter(uint32_t filter) = 0;
         virtual void set_wrap(uint32_t wrap)     = 0;
         virtual void generate_mipmap()           = 0;
@@ -92,38 +80,34 @@ namespace box
         int32_t  _format{};
     };
 
-    class tileset : public asset
-    {
-    public:
-        virtual ~tileset()                                                     = default;
-        virtual uint32_t                  size() const                         = 0;
-        virtual Vec2u                     get_tile_size() const                = 0;
-        virtual const asset_ref<texture>& get_texture() const                  = 0;
-        virtual Vec2u                     get_tile(uint32_t tile) const        = 0;
-    };
-
     class atlas : public asset
     {
     public:
+        struct sprite
+        {
+            Rectu region;
+            Vec2i origin;
+            std::string_view id;
+        };
+
         virtual ~atlas() = default;
         virtual uint32_t                  size() const                              = 0;
         virtual const asset_ref<texture>& get_texture() const                       = 0;
-        virtual Rectu                     get_sprite(uint32_t sprite) const         = 0;
+        virtual const sprite*             get_sprite(uint32_t sprite) const         = 0;
         virtual uint32_t                  get_sprite(std::string_view sprite) const = 0;
-        virtual Vec2i                     get_origin(uint32_t sprite) const         = 0;
+        virtual Vec2u                     get_space() const                         = 0;
+        virtual Vec2u                     get_margin() const                        = 0;
+        virtual Vec2u                     get_tile_size() const                     = 0;
     };
 
-    class render_texture
+    class render_texture : public asset
     {
     public:
         virtual ~render_texture()                                                          = default;
         virtual const texture& get_texture() const                                         = 0;
         virtual const texture& get_depth() const                                           = 0;
         virtual bool           create(uint32_t width, uint32_t height, bool depth = false) = 0;
-        const Vec2i&           size() const
-        {
-            return _size;
-        }
+        const Vec2i&           size() const;
 
     protected:
         uint32_t _id{};
@@ -148,7 +132,8 @@ namespace box
         virtual material*       get_material()                                                           = 0;
         virtual mesh            begin_mesh(uint32_t vertex)                                              = 0;
         virtual void            end_mesh(const mesh& mesh)                                               = 0;
-        virtual render_texture* load_render_texture(uint32_t width, uint32_t height, bool depth = false) = 0;
+
+        virtual asset_ref<render_texture> create_render_texture(uint32_t width, uint32_t height, bool depth = false) = 0;
 
         virtual void            draw_line(Vec2f p1, Vec2f p2, color clr)                                 = 0;
         virtual void            draw_polyline(const Vec2f* p, size_t size, bool closed, color clr)       = 0;
@@ -181,5 +166,30 @@ namespace box
     {
         _corners = vtx;
         _size    = size;
+    }
+
+    inline int32_t texture::get_mipmaps() const
+    {
+        return _mipmaps;
+    }
+
+    inline const Vec2i& texture::size() const
+    {
+        return _size;
+    }
+
+    inline uint32_t texture::handle() const
+    {
+        return _id;
+    }
+
+    inline int32_t texture::get_format() const
+    {
+        return _format;
+    }
+
+    inline const Vec2i& render_texture::size() const
+    {
+        return _size;
     }
 } // namespace box

@@ -3,6 +3,15 @@
 
 namespace box
 {
+    template <typename ASSET, typename BASE>
+    asset_ref<BASE> asset_provider_impl::load_asset(const char* path)
+    {
+        auto ret = new ASSET();
+        ret->set_asset_provider(this);
+        ret->load(path);
+        return ret;
+    }
+
 	asset_provider_impl::asset_provider_impl()
 	{
 	}
@@ -17,13 +26,13 @@ namespace box
 	}
 
 	asset_ref<texture> asset_provider_impl::load_texture(const char* path)
-	{
-        return static_cast<renderer_impl*>(_renderer)->load_texture(path);
+    {
+        return load_asset<texture_impl, texture>(path);
 	}
 
 	asset_ref<material> asset_provider_impl::load_material(const char* path)
-	{
-        return static_cast<renderer_impl*>(_renderer)->load_material(path);
+    {
+        return load_asset<material_impl, material>(path);
 	}
 
 	asset_ref<sound> asset_provider_impl::load_sound(const char* path)

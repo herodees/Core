@@ -8,6 +8,10 @@ namespace box
     struct color;
     struct rigid_body_component;
     struct collider_component;
+    struct collider_filter;
+    struct circle_collider_component;
+    struct segment_collider_component;
+    struct polygon_collider_component;
     class asset_provider;
     class texture;
     class material;
@@ -19,6 +23,7 @@ namespace box
     class entity;
     class system;
     class game;
+    class atlas;
     class physics;
     class tileset;
     class render_texture;
@@ -42,6 +47,4 @@ namespace box
 #include "Scene.hpp"
 #include "Graphics.hpp"
 #include "Physics.hpp"
-
-
-
+#include "Tileset.hpp"

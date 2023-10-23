@@ -17,6 +17,7 @@ namespace box
         {
             ++_ref;
         }
+
         bool rem_ref()
         {
             if (!--_ref)
@@ -27,8 +28,19 @@ namespace box
             return false;
         }
 
-    private:
+        asset_provider* get_asset_provider() const
+        {
+            return _provider;
+        }
+
+        void set_asset_provider(asset_provider* pr)
+        {
+            _provider = pr;
+        }
+
+    protected:
         std::atomic_int _ref{1};
+        asset_provider* _provider{};
     };
 
 
