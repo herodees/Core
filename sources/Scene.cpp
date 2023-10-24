@@ -35,13 +35,13 @@ namespace box
         {
             auto ent = create();
 
-            auto body = scene::emplace<rigid_body_component>(ent);
+            auto body = scene::add_component<rigid_body_component>(ent);
             body->set_position({x, y});
             body->set_moment(0.1);
             body->set_mass(fr);
             body->set_type(stat ? body_type::STATIC : body_type::DYNAMIC);
 
-            auto collider = scene::emplace<circle_collider_component>(ent);
+            auto collider = scene::add_component<circle_collider_component>(ent);
             collider->set_body(body);
             collider->setup(r, {0, 0});
             collider->set_elasticity(0.699);
@@ -70,6 +70,12 @@ namespace box
 
     void scene_impl::release(entity_id id)
     {
+        for (auto& it : _behaviors)
+            it.second.storage.remove((entt::entity)id);
+
+        for (auto& it : _tags)
+            it.remove((entt::entity)id);
+
         _registry.destroy((entt::entity)id);
     }
 
@@ -87,7 +93,7 @@ namespace box
         return nullptr;
     }
 
-    component* scene_impl::emplace(entity_id id, std::string_view cmp_id)
+    component* scene_impl::add_component(entity_id id, std::string_view cmp_id)
     {
         if (auto* cmp = find_component_definition(cmp_id))
         {
@@ -97,7 +103,7 @@ namespace box
         return nullptr;
     }
 
-    void scene_impl::remove(entity_id id, std::string_view cmp_id)
+    void scene_impl::remove_component(entity_id id, std::string_view cmp_id)
     {
         if (auto* cmp = find_component_definition(cmp_id))
         {
@@ -105,7 +111,7 @@ namespace box
         }
     }
 
-    bool scene_impl::contains(entity_id id, std::string_view cmp_id) const
+    bool scene_impl::contains_component(entity_id id, std::string_view cmp_id) const
     {
         if (auto* cmp = find_component_definition(cmp_id))
         {
@@ -114,7 +120,7 @@ namespace box
         return false;
     }
 
-    bool scene_impl::contains(entity_id id, const Storage** storage, size_t count) const
+    bool scene_impl::contains_component(entity_id id, const Storage** storage, size_t count) const
     {
         const entt::sparse_set** sets = reinterpret_cast<const entt::sparse_set**>(storage);
         for (size_t n = 0; n < count; ++n)
@@ -125,7 +131,7 @@ namespace box
         return true;
     }
 
-    void scene_impl::patch(entity_id id, std::string_view cmp_id)
+    void scene_impl::patch_component(entity_id id, std::string_view cmp_id)
     {
         if (auto* cmp = find_component_definition(cmp_id))
         {

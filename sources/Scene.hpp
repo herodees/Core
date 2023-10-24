@@ -21,22 +21,21 @@ namespace box
 
 	class scene_impl final : public scene
 	{
-	public:
-		scene_impl(game& gme);
-		~scene_impl() override;
+    public:
+        scene_impl(game& gme);
+        ~scene_impl() override;
 
-        void init();
-        void deinit();
-
+        void       init();
+        void       deinit();
         entity_id  create() override;
         void       release(entity_id id) override;
         bool       is_valid(entity_id id) const override;
         component* get_component(entity_id id, std::string_view component) override;
-        component* emplace(entity_id id, std::string_view component) override;
-        void       remove(entity_id id, std::string_view component) override;
-        bool       contains(entity_id id, std::string_view component) const override;
-        bool       contains(entity_id id, const Storage** storage, size_t count) const override;
-        void       patch(entity_id id, std::string_view component) override;
+        component* add_component(entity_id id, std::string_view component) override;
+        void       remove_component(entity_id id, std::string_view component) override;
+        bool       contains_component(entity_id id, std::string_view component) const override;
+        bool       contains_component(entity_id id, const Storage** storage, size_t count) const override;
+        void       patch_component(entity_id id, std::string_view component) override;
         void       add_tag(entity_id id, tag_id tag) override;
         void       remove_tag(entity_id id, tag_id tag) override;
         bool       contains_tag(entity_id id, tag_id tag) const override;

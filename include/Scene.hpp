@@ -84,25 +84,15 @@ namespace box
     class behavior
     {
     public:
-        struct factory
-        {
-            std::string_view id;
-            std::string_view name;
-            plugin*          plugin{};
-            behavior* (*construct)(factory*){};
-            void (*destruct)(factory*, behavior*){};
-            std::pmr::unsynchronized_pool_resource pool;
-        };
+        struct factory;
 
     public:
         behavior()          = default;
         virtual ~behavior() = default;
 
-        virtual void on_create(entity& self){};
-        virtual void on_destroy(entity& self){};
-        virtual void on_step(entity& self, float dt){};
-        virtual void on_static_step(entity& self, float dt){};
-        virtual void on_render(entity& self){};
+        virtual void on_step(float dt){};
+        virtual void on_static_step(float dt){};
+        virtual void on_render(){};
     };
 
 
@@ -116,15 +106,16 @@ namespace box
         template <typename B>
         scene& register_behavior(std::string_view id, std::string_view name);
 
+        virtual game& get_game() const = 0;
+
         virtual entity_id  create()                                                                                = 0;
         virtual void       release(entity_id id)                                                                   = 0;
         virtual bool       is_valid(entity_id id) const                                                            = 0;
-        virtual component* emplace(entity_id id, std::string_view component)                                       = 0;
+        virtual component* add_component(entity_id id, std::string_view component)                                 = 0;
         virtual component* get_component(entity_id id, std::string_view component)                                 = 0;
-        virtual void       remove(entity_id id, std::string_view component)                                        = 0;
-        virtual bool       contains(entity_id id, std::string_view component) const                                = 0;
-        virtual bool       contains(entity_id id, const Storage** storage, size_t count) const                     = 0;
-        virtual void       patch(entity_id id, std::string_view component)                                         = 0;
+        virtual void       remove_component(entity_id id, std::string_view component)                              = 0;
+        virtual bool       contains_component(entity_id id, std::string_view component) const                      = 0;
+        virtual void       patch_component(entity_id id, std::string_view component)                               = 0;
         virtual void       add_tag(entity_id id, tag_id tag)                                                       = 0;
         virtual void       remove_tag(entity_id id, tag_id tag)                                                    = 0;
         virtual bool       contains_tag(entity_id id, tag_id tag) const                                            = 0;
@@ -135,31 +126,32 @@ namespace box
         virtual bool       get_view(scene_view<1>* target, const tag_id* tags, size_t count) const                 = 0;
         virtual bool       get_view(scene_view<1>* target, const std::string_view* components, size_t count) const = 0;
         virtual system*    get_system(std::string_view sys) const                                                  = 0;
-        virtual game&      get_game() const                                                                        = 0;
-        virtual behavior::factory* register_behavior(behavior::factory*)                                           = 0;
+
+        virtual behavior::factory* register_behavior(behavior::factory*)                                         = 0;
+        virtual bool               contains_component(entity_id id, const Storage** storage, size_t count) const = 0;
 
         template <typename COMPONENT>
-        COMPONENT* emplace(entity_id id)
+        COMPONENT* add_component(entity_id id)
         {
-            return static_cast<COMPONENT*>(emplace(id, COMPONENT::type_info.id));
+            return static_cast<COMPONENT*>(add_component(id, COMPONENT::type_info.id));
         }
 
         template <typename COMPONENT>
-        void remove(entity_id id)
+        void remove_component(entity_id id)
         {
-            remove(id, COMPONENT::type_info.id);
+            remove_component(id, COMPONENT::type_info.id);
         }
 
         template <typename COMPONENT>
-        bool contains(entity_id id) const
+        bool contains_component(entity_id id) const
         {
             return contains(id, COMPONENT::type_info.id);
         }
 
         template <typename COMPONENT>
-        void patch(entity_id id)
+        void patch_component(entity_id id)
         {
-            patch(id, COMPONENT::type_info.id);
+            patch_component(id, COMPONENT::type_info.id);
         }
 
         auto view(std::convertible_to<std::string_view> auto&&... s);
@@ -187,12 +179,21 @@ namespace box
 
 
 
+    struct behavior::factory
+    {
+        std::string_view id;
+        std::string_view name;
+        plugin*          plugin{};
+        behavior* (*construct)(factory*){};
+        void (*destruct)(factory*, behavior*){};
+        std::pmr::unsynchronized_pool_resource pool;
+    };
+
+
     template <typename BEHAVIOR>
     class behavior_base : public behavior
     {
         friend class scene;
-    public:
-
     private:
         static behavior* type_construct(factory* f)
         {
