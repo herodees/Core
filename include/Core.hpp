@@ -31,9 +31,11 @@ namespace box
     enum class uniform_type;
 } // namespace box
 
+#include <new>
 #include <atomic>
 #include <charconv>
 #include <string_view>
+#include <memory_resource>
 #include <cmath>
 #include <cstdint>
 

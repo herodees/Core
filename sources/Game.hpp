@@ -15,15 +15,15 @@ namespace box
         game_impl();
         ~game_impl() override;
 
-        int32_t         run(const char* v[], int32_t c);
-        void            init(const char* v[], int32_t c);
-        renderer&       get_renderer() override;
-        asset_provider& get_asset() override;
-        scene&          get_scene() override;
-        physics&        get_physics() override;
-        inputs&         get_inputs() override;
-        video&          get_video() override;
-        plugin&         get_plugin() override;
+        int32_t            run(const char* v[], int32_t c);
+        void               init(const char* v[], int32_t c);
+        renderer&          get_renderer() override;
+        asset_provider&    get_asset() override;
+        scene&             get_scene() override;
+        physics&           get_physics() override;
+        inputs&            get_inputs() override;
+        video&             get_video() override;
+        plugin&            get_plugin() override;
 
     private:
         void on_frame_begin();

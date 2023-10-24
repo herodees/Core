@@ -81,12 +81,40 @@ namespace box
 
 
 
+    class behavior
+    {
+    public:
+        struct factory
+        {
+            std::string_view id;
+            std::string_view name;
+            plugin*          plugin{};
+            behavior* (*construct)(factory*){};
+            void (*destruct)(factory*, behavior*){};
+            std::pmr::unsynchronized_pool_resource pool;
+        };
+
+    public:
+        behavior()          = default;
+        virtual ~behavior() = default;
+
+        virtual void on_create(entity& self){};
+        virtual void on_destroy(entity& self){};
+        virtual void on_step(entity& self, float dt){};
+        virtual void on_static_step(entity& self, float dt){};
+        virtual void on_render(entity& self){};
+    };
+
+
 
     class scene
     {
     public:
         scene()          = default;
         virtual ~scene() = default;
+
+        template <typename B>
+        scene& register_behavior(std::string_view id, std::string_view name);
 
         virtual entity_id  create()                                                                                = 0;
         virtual void       release(entity_id id)                                                                   = 0;
@@ -100,10 +128,15 @@ namespace box
         virtual void       add_tag(entity_id id, tag_id tag)                                                       = 0;
         virtual void       remove_tag(entity_id id, tag_id tag)                                                    = 0;
         virtual bool       contains_tag(entity_id id, tag_id tag) const                                            = 0;
+        virtual void       add_behavior(entity_id id, std::string_view beh_id)                                     = 0;
+        virtual void       remove_behavior(entity_id id, std::string_view beh_id)                                  = 0;
+        virtual bool       contains_behavior(entity_id id, std::string_view beh_id) const                          = 0;
+        virtual behavior*  get_behavior(entity_id id, std::string_view beh_id)                                     = 0;
         virtual bool       get_view(scene_view<1>* target, const tag_id* tags, size_t count) const                 = 0;
         virtual bool       get_view(scene_view<1>* target, const std::string_view* components, size_t count) const = 0;
         virtual system*    get_system(std::string_view sys) const                                                  = 0;
         virtual game&      get_game() const                                                                        = 0;
+        virtual behavior::factory* register_behavior(behavior::factory*)                                           = 0;
 
         template <typename COMPONENT>
         COMPONENT* emplace(entity_id id)
@@ -154,20 +187,46 @@ namespace box
 
 
 
-    class behavior
+    template <typename BEHAVIOR>
+    class behavior_base : public behavior
     {
+        friend class scene;
     public:
-        behavior()          = default;
-        virtual ~behavior() = default;
 
-        virtual void on_create(entity& self){};
-        virtual void on_destroy(entity& self){};
-        virtual void on_step(entity& self, float dt){};
-        virtual void on_static_step(entity& self, float dt){};
-        virtual void on_render(entity& self){};
+    private:
+        static behavior* type_construct(factory* f)
+        {
+            return new (f->pool.allocate(sizeof(BEHAVIOR))) BEHAVIOR();
+        }
+
+        static void type_destruct(factory* f, behavior* b)
+        {
+            if (!b)
+                return;
+            static_cast<BEHAVIOR*>(b)->~BEHAVIOR();
+            f->pool.deallocate(b, sizeof(BEHAVIOR));
+        }
+
+        static factory* type_factory(std::string_view id, std::string_view name)
+        {
+            static factory s_fact;
+            if (!s_fact.construct)
+            {
+                auto copystr = [](factory& fact, std::string_view str)
+                {
+                    auto strid = static_cast<char*>(fact.pool.allocate(str.size() + 1));
+                    strid[str.size()] = 0;
+                    std::copy(str.begin(), str.end(), strid);
+                    return std::string_view(strid, str.size());
+                };
+                s_fact.construct = &behavior_base<BEHAVIOR>::type_construct;
+                s_fact.destruct  = &behavior_base<BEHAVIOR>::type_destruct;
+                s_fact.id   = copystr(s_fact, id);
+                s_fact.name = copystr(s_fact, name);
+            }
+            return &s_fact;
+        }
     };
-
-
 
     template <typename T, size_t S>
     inline auto scene::view(std::initializer_list<T>&& list)
@@ -255,4 +314,10 @@ namespace box
         return out;
     }
 
+    template <typename B>
+    inline scene& scene::register_behavior(std::string_view id, std::string_view name)
+    {
+        register_behavior(B::type_factory(id, name));
+        return *this;
+    }
 } // namespace box

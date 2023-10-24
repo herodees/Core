@@ -13,13 +13,13 @@ namespace box
     public:
         virtual ~game() = default;
 
-        virtual renderer&       get_renderer() = 0;
-        virtual asset_provider& get_asset()    = 0;
-        virtual plugin&         get_plugin()   = 0;
-        virtual scene&          get_scene()    = 0;
-        virtual inputs&         get_inputs()   = 0;
-        virtual video&          get_video()    = 0;
-        virtual physics&        get_physics()  = 0;
+        virtual renderer&          get_renderer()                        = 0;
+        virtual asset_provider&    get_asset()                           = 0;
+        virtual plugin&            get_plugin()                          = 0;
+        virtual scene&             get_scene()                           = 0;
+        virtual inputs&            get_inputs()                          = 0;
+        virtual video&             get_video()                           = 0;
+        virtual physics&           get_physics()                         = 0;
     };
 
 
@@ -39,7 +39,6 @@ namespace box
         virtual void on_scene_end(game& gme){};
 
         virtual void on_step(game& gme){};
-
     };
 
 
@@ -53,4 +52,5 @@ namespace box
         virtual asset_ref<sound>     load_sound(const char* path)     = 0;
         virtual asset_ref<prototype> load_prototype(const char* path) = 0;
     };
+
 } // namespace box

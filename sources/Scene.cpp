@@ -154,6 +154,38 @@ namespace box
         return _tags[tag].contains((entt::entity)id);
     }
 
+    void scene_impl::add_behavior(entity_id id, std::string_view beh_id)
+    {
+        auto it = _behaviors.find(beh_id);
+        if (it == _behaviors.end())
+            return;
+        it->second.storage.emplace((entt::entity)id);
+    }
+
+    void scene_impl::remove_behavior(entity_id id, std::string_view beh_id)
+    {
+        auto it = _behaviors.find(beh_id);
+        if (it == _behaviors.end())
+            return;
+        it->second.storage.remove((entt::entity)id);
+    }
+
+    bool scene_impl::contains_behavior(entity_id id, std::string_view beh_id) const
+    {
+        auto it = _behaviors.find(beh_id);
+        if (it == _behaviors.end())
+            return false;
+        return it->second.storage.contains((entt::entity)id);
+    }
+
+    behavior* scene_impl::get_behavior(entity_id id, std::string_view beh_id)
+    {
+        auto it = _behaviors.find(beh_id);
+        if (it == _behaviors.end())
+            return nullptr;
+        return it->second.storage.get((entt::entity)id);
+    }
+
     bool scene_impl::get_view(scene_view<1>* target, const tag_id* tags, size_t count) const
     {
         for (size_t n = 0; n < count; ++n)
@@ -215,6 +247,13 @@ namespace box
     game& scene_impl::get_game() const
     {
         return _game;
+    }
+    
+    behavior::factory* scene_impl::register_behavior(behavior::factory* f)
+    {
+        auto& def = _behaviors[std::string(f->id)];
+        def.factory = f;
+        return f;
     }
 
     const component_definition* scene_impl::find_component_definition(std::string_view id) const

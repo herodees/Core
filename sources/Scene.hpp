@@ -12,6 +12,12 @@ namespace box
 	};
 
 
+    struct behavior_definition
+    {
+        behavior::factory* factory;
+        entt::basic_storage<behavior*> storage;
+    };
+
 
 	class scene_impl final : public scene
 	{
@@ -34,10 +40,15 @@ namespace box
         void       add_tag(entity_id id, tag_id tag) override;
         void       remove_tag(entity_id id, tag_id tag) override;
         bool       contains_tag(entity_id id, tag_id tag) const override;
+        void       add_behavior(entity_id id, std::string_view beh_id) override;
+        void       remove_behavior(entity_id id, std::string_view beh_id) override;
+        bool       contains_behavior(entity_id id, std::string_view beh_id) const override;
+        behavior*  get_behavior(entity_id id, std::string_view beh_id) override;
         bool       get_view(scene_view<1>* target, const tag_id* tags, size_t count) const override;
         bool       get_view(scene_view<1>* target, const std::string_view* components, size_t count) const override;
         system*    get_system(std::string_view sys) const override;
         game&      get_game() const override;
+        behavior::factory* register_behavior(behavior::factory* f) override;
 
         const component_definition* find_component_definition(std::string_view id) const;
         void                        update(float delta_time);
@@ -56,6 +67,8 @@ namespace box
         std::vector<entt::sparse_set>                                                               _tags{};
         std::unordered_map<std::string, std::unique_ptr<system>, std::string_hash, std::equal_to<>> _systems{};
         std::unordered_map<std::string, component_definition, std::string_hash, std::equal_to<>>    _components{};
+        std::unordered_map<std::string, behavior_definition, std::string_hash, std::equal_to<>>     _behaviors{};
+        std::unordered_map<std::string, entt::sparse_set, std::string_hash, std::equal_to<>>        _tagss{};
 	};
 
 

@@ -14,7 +14,7 @@ namespace box
     } null_p;
 
 	game_impl::game_impl() : _plugin(&null_p), _scene(*this)
-	{
+    {
 	}
 
 	game_impl::~game_impl()
@@ -97,7 +97,9 @@ namespace box
 		ray::CloseWindow();
         return 0;
 	}
-
+    struct testt : public behavior_base<testt>
+    {
+    };
     void game_impl::init(const char* v[], int32_t c)
     {
 		if (c == 2)
@@ -117,6 +119,11 @@ namespace box
         {
             _plugin = &null_p;
 		}
+
+
+        
+
+        get_scene().register_behavior<testt>("tst", "Test");
     }
 
 }

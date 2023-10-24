@@ -20,7 +20,6 @@ namespace box
         scene_impl& scene = static_cast<scene_impl&>(scn);
 
         scene.get_registry().sort<tileset_layer>([](const auto& lhs, const auto& rhs) { return lhs._order < rhs._order; });
-
     }
 
 } // namespace box

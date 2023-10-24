@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <execution>
+#include <memory_resource>
 
 #pragma warning(push)
 #pragma warning(disable : 4820)
