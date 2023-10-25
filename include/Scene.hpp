@@ -8,6 +8,45 @@ namespace box
 
     using tag_id = uint8_t;
 
+
+
+    class entity
+    {
+    public:
+        entity() = default;
+        entity(scene* scn, entity_id id);
+        entity(const entity& ent);
+        entity& operator=(const entity& ent);
+        explicit operator bool() const;
+
+        bool      is_valid() const;
+
+        entity_id get_id() const;
+        scene*    get_scene() const;
+
+        behavior*  get_behavior(std::string_view id) const;
+        component* get_component(std::string_view id) const;
+        void       patch_component(std::string_view id);
+
+        bool contains_behavior(std::string_view id) const;
+        bool contains_component(std::string_view id) const;
+        bool contains_tag(tag_id id) const;
+
+        behavior*  add_behavior(std::string_view id);
+        component* add_component(std::string_view id);
+        void       add_tag(tag_id id);
+
+        void remove_behavior(std::string_view id);
+        void remove_component(std::string_view id);
+        void remove_tag(tag_id id);
+
+    private:
+        scene* _scene{};
+        entity_id _id{};
+    };
+
+
+
     template <size_t SZE>
     class scene_view
     {
@@ -36,19 +75,20 @@ namespace box
             {
                 return _ptr != it._ptr;
             }
-            const entity_id* operator->() const
+            const entity* operator->() const
             {
-                return *_ptr;
+                return &_ent;
             }
-            operator entity_id() const
+            operator entity&() const
             {
-                return *_ptr;
+                return _ent;
             }
 
         private:
             void             filter();
             scene_view*      _view{};
             const entity_id* _ptr{};
+            entity           _ent{};
         };
 
         iterator begin()
@@ -93,6 +133,18 @@ namespace box
         virtual void on_step(float dt){};
         virtual void on_static_step(float dt){};
         virtual void on_render(){};
+
+        template <typename T>
+        T* as()
+        {
+            return static_cast<T*>(this);
+        }
+
+        template <typename T>
+        const T* as() const
+        {
+            return static_cast<const T*>(this);
+        }
     };
 
 
@@ -170,11 +222,11 @@ namespace box
     
         virtual void init(scene& scn){};
         virtual void deinit(scene& scn){};
+        virtual void update(scene& scn, float delta) = 0;
         virtual void on_scene_begin(scene& scn){};
         virtual void on_scene_end(scene& scn){};
         virtual void on_frame_begin(scene& scn, float delta_time){};
         virtual void on_frame_end(scene& scn){};
-        virtual void update(scene& scn, float delta) = 0;
     };
 
 
@@ -272,6 +324,7 @@ namespace box
         {
             ++_ptr;
         }
+        _ent = {_view->_scene, *_ptr};
     }
 
     template <size_t SZE>
@@ -320,5 +373,103 @@ namespace box
     {
         register_behavior(B::type_factory(id, name));
         return *this;
+    }
+
+
+    inline entity::entity(scene* scn, entity_id id) : _scene(scn), _id(id)
+    {
+    }
+
+    inline entity::entity(const entity& ent) : _scene(ent._scene), _id(ent._id)
+    {
+    }
+
+    inline entity& entity::operator=(const entity& ent)
+    {
+        _scene = ent._scene;
+        _id    = ent._id;
+        return *this;
+    }
+
+    inline entity::operator bool() const
+    {
+        return _scene && _scene->is_valid(_id);
+    }
+
+    inline bool entity::is_valid() const
+    {
+        return _scene && _scene->is_valid(_id);
+    }
+
+    inline entity_id entity::get_id() const
+    {
+        return _id;
+    }
+
+    inline scene* entity::get_scene() const
+    {
+        return _scene;
+    }
+
+    inline behavior* entity::get_behavior(std::string_view id) const
+    {
+        return _scene->get_behavior(_id, id);
+    }
+
+    inline component* entity::get_component(std::string_view id) const
+    {
+        return _scene->get_component(_id, id);
+    }
+
+    inline void entity::patch_component(std::string_view id)
+    {
+        return _scene->patch_component(_id, id);
+    }
+
+    inline bool entity::contains_behavior(std::string_view id) const
+    {
+        return _scene->contains_behavior(_id, id);
+    }
+
+    inline bool entity::contains_component(std::string_view id) const
+    {
+        return _scene->contains_component(_id, id);
+    }
+
+    inline bool entity::contains_tag(tag_id id) const
+    {
+        return _scene->contains_tag(_id, id);
+    }
+
+    inline behavior* entity::add_behavior(std::string_view id)
+    {
+        _scene->add_behavior(_id, id);
+        return _scene->get_behavior(_id, id);
+    }
+
+    inline component* entity::add_component(std::string_view id)
+    {
+        _scene->add_component(_id, id);
+        return _scene->get_component(_id, id);
+    }
+
+    inline void entity::add_tag(tag_id id)
+    {
+        _scene->add_tag(_id, id);
+    }
+
+    inline void entity::remove_behavior(std::string_view id)
+    {
+        _scene->remove_behavior(_id, id);
+    }
+
+    inline void entity::remove_component(std::string_view id)
+    {
+        _scene->remove_component(_id, id);
+    }
+
+    inline void entity::remove_tag(tag_id id)
+    {
+        _scene->remove_tag(_id, id);
     }
 } // namespace box

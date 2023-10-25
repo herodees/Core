@@ -138,6 +138,10 @@ namespace box
         {
             return _ptr;
         }
+        AST* get() const
+        {
+            return _ptr;
+        };
 
         AST* _ptr{};
     };

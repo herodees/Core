@@ -26,6 +26,7 @@ namespace box
     class atlas;
     class physics;
     class tileset;
+    class behavior;
     class render_texture;
     enum class blend_mode;
     enum class uniform_type;

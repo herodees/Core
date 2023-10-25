@@ -160,4 +160,4 @@ SpacesInParentheses: false
 SpacesInSquareBrackets: false
 
 # Line endings
-UseCRLF: false
+UseCRLF: true

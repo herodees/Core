@@ -67,7 +67,6 @@ namespace box
         std::unordered_map<std::string, std::unique_ptr<system>, std::string_hash, std::equal_to<>> _systems{};
         std::unordered_map<std::string, component_definition, std::string_hash, std::equal_to<>>    _components{};
         std::unordered_map<std::string, behavior_definition, std::string_hash, std::equal_to<>>     _behaviors{};
-        std::unordered_map<std::string, entt::sparse_set, std::string_hash, std::equal_to<>>        _tagss{};
 	};
 
 

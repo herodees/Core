@@ -29,6 +29,9 @@ namespace box
         vec2     operator/(const vec2& other) const;
         vec2     operator*(const T& value) const;
         vec2     operator*(const vec2& other) const;
+        bool     operator<(const vec2& other) const;
+        bool     operator==(const vec2& other) const;
+        bool     operator!=(const vec2& other) const;
         float    get_angle() const;
         float    get_angle_deg() const;
         T&       operator[](size_t n);
@@ -138,6 +141,26 @@ namespace box
     inline vec2<T> vec2<T>::operator*(const vec2& other) const
     {
         return vec2(x * other.x, y * other.y);
+    }
+
+    template <typename T>
+    inline bool vec2<T>::operator<(const vec2& other) const
+    {
+        if (x == other.x)
+            return y < other.y;
+        return x < other.x;
+    }
+
+    template <typename T>
+    inline bool vec2<T>::operator==(const vec2& other) const
+    {
+        return x == other.x && y == other.y;
+    }
+
+    template <typename T>
+    inline bool vec2<T>::operator!=(const vec2& other) const
+    {
+        return !operator==(other);
     }
 
     template <typename T>

@@ -5,6 +5,18 @@ namespace box
     struct component
     {
         virtual ~component() = default;
+
+        template <typename T>
+        T* as()
+        {
+            return static_cast<T*>(this);
+        }
+
+        template <typename T>
+        const T* as() const
+        {
+            return static_cast<const T*>(this);
+        }
     };
 
     struct component_type_info
