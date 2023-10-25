@@ -27,7 +27,7 @@ namespace box
 
         void       init();
         void       deinit();
-        entity_id  create() override;
+        entity     create() override;
         void       release(entity_id id) override;
         bool       is_valid(entity_id id) const override;
         component* get_component(entity_id id, std::string_view component) override;

@@ -35,13 +35,13 @@ namespace box
         {
             auto ent = create();
 
-            auto body = scene::add_component<rigid_body_component>(ent);
+            auto body = ent.add_component(rigid_body_component::type_info.id)->as<rigid_body_component>();
             body->set_position({x, y});
             body->set_moment(0.1);
             body->set_mass(fr);
             body->set_type(stat ? body_type::STATIC : body_type::DYNAMIC);
 
-            auto collider = scene::add_component<circle_collider_component>(ent);
+            auto collider = ent.add_component(circle_collider_component::type_info.id)->as<circle_collider_component>();
             collider->set_body(body);
             collider->setup(r, {0, 0});
             collider->set_elasticity(0.699);
@@ -63,9 +63,9 @@ namespace box
         }
     }
 
-    entity_id scene_impl::create()
+    entity scene_impl::create()
     {
-        return (entity_id)_registry.create();
+        return entity(this, (entity_id)_registry.create());
     }
 
     void scene_impl::release(entity_id id)

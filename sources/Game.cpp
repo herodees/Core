@@ -1,5 +1,9 @@
 #include "Game.hpp"
 
+#if defined(PLATFORM_WEB)
+#include <emscripten/emscripten.h>
+#endif
+
 #define SCREEN_WIDTH (1920)
 #define SCREEN_HEIGHT (1080)
 
@@ -19,7 +23,13 @@ namespace box
 
 	game_impl::~game_impl()
 	{
-	}
+    }
+
+    void game_impl::setup(const char* v[], int32_t c)
+    {
+        _argv = v;
+        _argc = c;
+    }
 
     renderer& game_impl::get_renderer()
     {
@@ -74,37 +84,48 @@ namespace box
         _scene.update(ray::GetFrameTime());
     }
 
-    int32_t game_impl::run(const char* v[], int32_t c)
+    void game_impl::em_arg_callback_func(void* p)
     {
+        game_impl* self = (game_impl*)(p);
+        self->on_frame_begin();
+        self->on_update();
+        self->on_frame_end();
+    }
+
+    int32_t game_impl::run( )
+    {
+
     //    ray::SetConfigFlags(ray::FLAG_MSAA_4X_HINT );
         ray::InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, WINDOW_TITLE);
         ray::SetTargetFPS(60);
 
-        init(v, c);
+        init( );
         _scene.init();
         _assets.init(&get_renderer());
 
         get_plugin().on_init(*this);
+
+#if defined(PLATFORM_WEB)
+        emscripten_set_main_loop_arg(game_impl::em_arg_callback_func, this, 0, 1);
+#else
         while (!ray::WindowShouldClose())
         {
-            on_frame_begin();
-            on_update();
-            on_frame_end();
+            em_arg_callback_func(this);
         }
+#endif
+        
         get_plugin().on_deinit(*this);
         _scene.deinit();
 
 		ray::CloseWindow();
         return 0;
 	}
-    struct testt : public behavior_base<testt>
+
+    void game_impl::init( )
     {
-    };
-    void game_impl::init(const char* v[], int32_t c)
-    {
-		if (c == 2)
+		if (_argc == 2)
 		{
-            _game_plugin.load(v[2]);
+            _game_plugin.load(_argv[2]);
 		}
 		else
 		{
@@ -119,11 +140,6 @@ namespace box
         {
             _plugin = &null_p;
 		}
-
-
-        
-
-        get_scene().register_behavior<testt>("tst", "Test");
     }
 
 }

@@ -83,7 +83,7 @@ namespace box
 
         if (_depthsort)
         {
-            std::sort(std::execution::seq,
+            std::sort(
                 _commands.begin(),
                 _commands.end(),
                 [](const command& a, const command& b)

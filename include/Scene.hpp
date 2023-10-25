@@ -79,11 +79,18 @@ namespace box
             {
                 return &_ent;
             }
-            operator entity&() const
+            entity* operator->()
+            {
+                return &_ent;
+            }
+            operator const entity&() const
             {
                 return _ent;
             }
-
+            operator entity&()
+            {
+                return _ent;
+            }
         private:
             void             filter();
             scene_view*      _view{};
@@ -130,9 +137,9 @@ namespace box
         behavior()          = default;
         virtual ~behavior() = default;
 
-        virtual void on_step(float dt){};
-        virtual void on_static_step(float dt){};
-        virtual void on_render(){};
+        virtual void on_step(entity& self, float dt){};
+        virtual void on_static_step(entity& self, float dt){};
+        virtual void on_render(entity& self){};
 
         template <typename T>
         T* as()
@@ -160,7 +167,7 @@ namespace box
 
         virtual game& get_game() const = 0;
 
-        virtual entity_id  create()                                                                                = 0;
+        virtual entity     create()                                                                                = 0;
         virtual void       release(entity_id id)                                                                   = 0;
         virtual bool       is_valid(entity_id id) const                                                            = 0;
         virtual component* add_component(entity_id id, std::string_view component)                                 = 0;
@@ -181,30 +188,6 @@ namespace box
 
         virtual behavior::factory* register_behavior(behavior::factory*)                                         = 0;
         virtual bool               contains_component(entity_id id, const Storage** storage, size_t count) const = 0;
-
-        template <typename COMPONENT>
-        COMPONENT* add_component(entity_id id)
-        {
-            return static_cast<COMPONENT*>(add_component(id, COMPONENT::type_info.id));
-        }
-
-        template <typename COMPONENT>
-        void remove_component(entity_id id)
-        {
-            remove_component(id, COMPONENT::type_info.id);
-        }
-
-        template <typename COMPONENT>
-        bool contains_component(entity_id id) const
-        {
-            return contains(id, COMPONENT::type_info.id);
-        }
-
-        template <typename COMPONENT>
-        void patch_component(entity_id id)
-        {
-            patch_component(id, COMPONENT::type_info.id);
-        }
 
         auto view(std::convertible_to<std::string_view> auto&&... s);
         auto view(std::convertible_to<tag_id> auto&&... s);
@@ -320,7 +303,7 @@ namespace box
             return;
         const auto end = _view->_data + _view->_size;
 
-        while (!_view->_scene->contains(*_ptr, _view->_storage + 1, _view->_size - 1) && _ptr != end)
+        while (!_view->_scene->contains_component(*_ptr, _view->_storage + 1, _view->_size - 1) && _ptr != end)
         {
             ++_ptr;
         }
@@ -330,7 +313,7 @@ namespace box
     template <size_t SZE>
     inline bool scene_view<SZE>::contains(entity_id id) const
     {
-        return _scene->_scene->contains(id, _storage, _size);
+        return _scene->contains_component(id, _storage, _size);
     }
 
     template <size_t SZE>

@@ -1,8 +1,11 @@
 
 #include "Game.hpp"
 
+box::game_impl app;
+
 int main(int c, const char* v[]) 
 {
-    box::game_impl app;
-    return app.run(v, c);
+    app.setup(v, c);
+    app.run();
+    return 0;
 }

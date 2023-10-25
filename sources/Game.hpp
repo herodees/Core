@@ -15,8 +15,10 @@ namespace box
         game_impl();
         ~game_impl() override;
 
-        int32_t            run(const char* v[], int32_t c);
-        void               init(const char* v[], int32_t c);
+        void setup(const char* v[], int32_t c);
+
+        int32_t            run();
+        void               init();
         renderer&          get_renderer() override;
         asset_provider&    get_asset() override;
         scene&             get_scene() override;
@@ -30,6 +32,8 @@ namespace box
         void on_frame_end();
         void on_update();
 
+        static void em_arg_callback_func(void*);
+
     private:
         plugin*             _plugin;
         asset_provider_impl _assets;
@@ -37,5 +41,7 @@ namespace box
         inputs_impl         _inputs;
         video_impl          _video;
         game_plugin         _game_plugin;
+        const char**        _argv{};
+        int32_t             _argc{};
     };
 } // namespace box
