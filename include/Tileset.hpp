@@ -9,6 +9,14 @@ namespace box
         uint16_t _tile;
     };
 
+    struct sprite
+    {
+        uint16_t _atlas;
+        uint16_t _tile;
+        int16_t  _x;
+        int16_t  _y;
+    };
+
     class tileset : public system
     {
     public:

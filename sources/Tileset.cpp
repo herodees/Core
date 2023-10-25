@@ -31,11 +31,27 @@ namespace box
 
         _active_region = region;
 
-        auto* active = _active_chunks;
-        while (active)
+        Recti reg;
+        reg.min = _active_region.min / _chunk_size;
+        reg.max = _active_region.max / _chunk_size;
+
+        if (reg.min.x == reg.max.x)
+            reg.max.x += 1;
+        if (reg.min.y == reg.max.y)
+            reg.max.y += 1;
+
+        for (int32_t x = reg.min.x; x < reg.max.x; ++x)
         {
-            active->_active = false;
-            active          = active->_next;
+            for (int32_t y = reg.min.y; y < reg.max.y; ++y)
+            {
+                activate_chunk({x, y}, true);
+            }
+        }
+
+        auto* chunk = _active_chunks;
+        while (chunk)
+        {
+            chunk = chunk->_next;
         }
     }
 
@@ -109,6 +125,8 @@ namespace box
             ray::MemFree(chunk._data);
             chunk._data = nullptr;
             chunk._size = 0;
+            chunk._next    = _active_chunks;
+            _active_chunks = &chunk;
         }
         else
         {

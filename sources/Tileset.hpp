@@ -46,14 +46,6 @@ namespace box
         std::map<Vec2i, tileset_chunk> _chumks;
     };
 
-    struct sprite
-    {
-        uint16_t _atlas;
-        uint16_t _tile;
-        int16_t  _x;
-        int16_t  _y;
-    };
-
     struct sprite_chunk
     {
         bool                _active{};
@@ -67,6 +59,7 @@ namespace box
 
         int32_t                       _order{};
         sprite_chunk*                 _active_chunks{};
+        Vec2i                         _chunk_size{128, 128};
         std::vector<asset_ref<atlas>> _atlases;
         std::map<Vec2i, sprite_chunk> _chumks;
     };
