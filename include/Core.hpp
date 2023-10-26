@@ -27,6 +27,7 @@ namespace box
     class physics;
     class tileset;
     class behavior;
+    class imgui;
     class render_texture;
     enum class blend_mode;
     enum class uniform_type;
@@ -47,6 +48,7 @@ namespace box
 #include "Components.hpp"
 #include "Export.hpp"
 #include "Game.hpp"
+#include "Imgui.hpp"
 #include "Scene.hpp"
 #include "Graphics.hpp"
 #include "Physics.hpp"

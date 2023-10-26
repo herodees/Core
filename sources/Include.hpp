@@ -29,7 +29,6 @@ namespace ray
 }
 #pragma warning(pop)
 
-
 namespace std
 {
 	struct string_hash

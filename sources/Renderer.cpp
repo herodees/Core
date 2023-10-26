@@ -21,10 +21,12 @@ namespace box
     {
     }
 
+    void renderer_impl::on_frame_begin(scene& scn, float delta_time)
+    {
+    }
+
     void renderer_impl::update(scene& scn, float delta)
     {
-        ray::BeginDrawing();
-
         clear_background({255, 255, 255, 255});
 
      //   if (begin_2d(camera(), false))
@@ -32,10 +34,9 @@ namespace box
             physics_impl* sys = (physics_impl*)scn.get_system("physics");
             sys->debug_draw(*this);
         }
-   //     end_2d();
+    //    end_2d();
 
         ray::DrawFPS(10, 10);
-        ray::EndDrawing();
     }
 
     void renderer_impl::clear_background(color c)

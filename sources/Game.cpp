@@ -66,8 +66,14 @@ namespace box
         return *_plugin;
     }
 
+    imgui& game_impl::get_imgui()
+    {
+        return _imgui;
+    }
+
     void game_impl::on_frame_begin()
     {
+        _imgui.on_frame_begin();
         get_plugin().on_frame_begin(*this, ray::GetFrameTime());
         _scene.on_frame_begin(ray::GetFrameTime());
     }
@@ -76,6 +82,13 @@ namespace box
     {
         _scene.on_frame_end();
         get_plugin().on_frame_end(*this);
+        _imgui.on_frame_end();
+    }
+
+    void game_impl::on_imgui()
+    {
+        get_plugin().on_imgui(*this);
+        _scene.on_imgui();
     }
 
     void game_impl::on_update()
@@ -87,9 +100,12 @@ namespace box
     void game_impl::em_arg_callback_func(void* p)
     {
         game_impl* self = (game_impl*)(p);
+        ray::BeginDrawing();
         self->on_frame_begin();
         self->on_update();
+        self->on_imgui();
         self->on_frame_end();
+        ray::EndDrawing();
     }
 
     int32_t game_impl::run( )
@@ -102,6 +118,7 @@ namespace box
         init( );
         _scene.init();
         _assets.init(&get_renderer());
+        _imgui.init(true);
 
         get_plugin().on_init(*this);
 
@@ -116,6 +133,7 @@ namespace box
         
         get_plugin().on_deinit(*this);
         _scene.deinit();
+        _imgui.deinit();
 
 		ray::CloseWindow();
         return 0;

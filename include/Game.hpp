@@ -20,6 +20,7 @@ namespace box
         virtual inputs&            get_inputs()                          = 0;
         virtual video&             get_video()                           = 0;
         virtual physics&           get_physics()                         = 0;
+        virtual imgui&             get_imgui()                           = 0;
     };
 
 
@@ -39,6 +40,8 @@ namespace box
         virtual void on_scene_end(game& gme){};
 
         virtual void on_step(game& gme){};
+
+        virtual void on_imgui(game& gme){};
     };
 
 

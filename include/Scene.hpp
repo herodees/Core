@@ -210,6 +210,7 @@ namespace box
         virtual void on_scene_end(scene& scn){};
         virtual void on_frame_begin(scene& scn, float delta_time){};
         virtual void on_frame_end(scene& scn){};
+        virtual void on_imgui(scene& scn){};
     };
 
 

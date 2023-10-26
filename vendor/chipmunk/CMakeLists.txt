@@ -29,8 +29,7 @@ add_library(chipmunk STATIC
 target_include_directories(chipmunk PUBLIC ${chipmunk_SOURCE_DIR}/include)
 set(CHIPMUNK_INCLUDE "${chipmunk_SOURCE_DIR}/include")
 
-
-    set_source_files_properties(${chipmunk_source_files} PROPERTIES LANGUAGE CXX)
-    set_target_properties(chipmunk PROPERTIES LINKER_LANGUAGE CXX)
-    set_target_properties(chipmunk PROPERTIES CXX_STANDARD 11)
+set_source_files_properties(${chipmunk_source_files} PROPERTIES LANGUAGE CXX)
+set_target_properties(chipmunk PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(chipmunk PROPERTIES CXX_STANDARD 11)
 

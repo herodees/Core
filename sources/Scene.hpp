@@ -53,6 +53,7 @@ namespace box
         void                        update(float delta_time);
         void                        on_frame_begin(float delta_time);
         void                        on_frame_end();
+        void                        on_imgui();
         entt::registry&             get_registry();
 
         template <typename C>

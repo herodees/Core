@@ -6,6 +6,7 @@
 #include "Renderer.hpp"
 #include "Scene.hpp"
 #include "Device.hpp"
+#include "Imgui.hpp"
 
 namespace box
 {
@@ -26,10 +27,12 @@ namespace box
         inputs&            get_inputs() override;
         video&             get_video() override;
         plugin&            get_plugin() override;
+        imgui&             get_imgui() override;
 
     private:
         void on_frame_begin();
         void on_frame_end();
+        void on_imgui();
         void on_update();
 
         static void em_arg_callback_func(void*);
@@ -40,6 +43,7 @@ namespace box
         scene_impl          _scene;
         inputs_impl         _inputs;
         video_impl          _video;
+        imgui_impl          _imgui;
         game_plugin         _game_plugin;
         const char**        _argv{};
         int32_t             _argc{};

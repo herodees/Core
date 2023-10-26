@@ -294,6 +294,14 @@ namespace box
         }
     }
 
+    void scene_impl::on_imgui()
+    {
+        for (auto& it : _systems)
+        {
+            it.second->on_imgui(*this);
+        }
+    }
+
     entt::registry& scene_impl::get_registry()
     {
         return _registry;

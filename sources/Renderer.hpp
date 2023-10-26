@@ -115,6 +115,7 @@ namespace box
         void deinit(scene& scn) override;
 
 		void update(scene& scn, float delta) override;
+        void on_frame_begin(scene& scn, float delta_time) override;
 
 		bool begin_2d(const camera& cam, bool depthsort) override;
 		void end_2d() override;

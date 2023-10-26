@@ -7,7 +7,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_subdirectory(vendor)
 
-
 # Adding our source files
 file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/sources/*.cpp") # Define PROJECT_SOURCES as a list of all source files
 set(PROJECT_SOURCE "${CMAKE_CURRENT_LIST_DIR}/sources/") # Define PROJECT_INCLUDE to be the path to the include directory of the project
@@ -21,6 +20,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCE})
 target_include_directories(${PROJECT_NAME} PRIVATE "${PROJECT_SOURCE}/deps")
 target_include_directories(${PROJECT_NAME} PRIVATE ${CHIPMUNK_INCLUDE})
+target_include_directories(${PROJECT_NAME} PRIVATE ${RLIMGUI_INCLUDE})
+target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/vendor/rlimgui")
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 20)
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -47,7 +48,6 @@ endif()
 if (${PLATFORM} STREQUAL "Web")
     # Tell Emscripten to build an example.html file.
     set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".html")
-    set(CMAKE_EXECUTABLE_SUFFIX ".html")
 endif()
 
 # Checks if OSX and links appropriate frameworks (Only required on MacOS)
