@@ -53,6 +53,11 @@ namespace box
         item_create(500, 200, 40, 5, true);
         item_create(450, 300, 40, 5, true);
         item_create(650, 300, 40, 5, true);
+
+        for (int i = 0; i < 100000; ++i)
+        {
+            auto ent = create();
+        }
     }
 
     void scene_impl::deinit()
@@ -65,7 +70,8 @@ namespace box
 
     entity scene_impl::create()
     {
-        return entity(this, (entity_id)_registry.create());
+        auto ent = _registry.create();
+        return entity(this, (entity_id)ent);
     }
 
     void scene_impl::release(entity_id id)
@@ -300,6 +306,9 @@ namespace box
         {
             it.second->on_imgui(*this);
         }
+
+        show_scene_imgui();
+        show_entity_imgui(_active_entity);
     }
 
     entt::registry& scene_impl::get_registry()
@@ -307,4 +316,66 @@ namespace box
         return _registry;
     }
 
+    void scene_impl::show_scene_imgui()
+    {
+        ImGui::SetNextWindowPos(ImVec2(32, 100), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(350, 680), ImGuiCond_FirstUseEver);
+        if (!ImGui::Begin("Scene inspector"))
+        {
+            ImGui::End();
+            return;
+        }
+
+        if (ImGui::BeginChildFrame(1, {0, 0}))
+        {
+            char str[32];
+
+            ImGuiListClipper clipper;
+            clipper.Begin(_registry.size());
+            while (clipper.Step())
+            {
+                auto it = _registry.data() + clipper.DisplayStart;
+                for (auto row = clipper.DisplayStart; row < clipper.DisplayEnd; row++)
+                {
+                    const uint32_t e = entt::to_integral(*it);
+                    sprintf(str, "%08X", e);
+                    if (ImGui::Selectable(str, _active_entity == row))
+                        _active_entity = row;
+                    ++it;
+                }
+            }
+        }
+        ImGui::EndChildFrame();
+
+        ImGui::End();
+    }
+
+    void scene_impl::show_entity_imgui(int32_t index)
+    {
+        constexpr auto width = 350;
+        ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - width - 32, 100), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(width, 680), ImGuiCond_FirstUseEver);
+        if (!ImGui::Begin("Entity properties") || index >= _registry.size() || !_registry.valid(_registry.data()[index]))
+        {
+            ImGui::End();
+            return;
+        }
+        auto eid = _registry.data()[index];
+
+        for (auto storage : _components)
+        {
+            if (storage.second.storage->contains(eid))
+            {
+                if (ImGui::CollapsingHeader(storage.second.name.c_str()))
+                {
+
+                    component* cmp = static_cast<component*>(storage.second.storage->get(eid));
+                    entity     ent(this, (entity_id)eid);
+                    cmp->on_edit(ent);
+                }
+            }
+        }
+
+        ImGui::End();
+    }
 }

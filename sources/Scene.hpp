@@ -54,6 +54,8 @@ namespace box
         void                        on_frame_begin(float delta_time);
         void                        on_frame_end();
         void                        on_imgui();
+        void                        show_scene_imgui();
+        void                        show_entity_imgui(int32_t index);
         entt::registry&             get_registry();
 
         template <typename C>
@@ -68,6 +70,7 @@ namespace box
         std::unordered_map<std::string, std::unique_ptr<system>, std::string_hash, std::equal_to<>> _systems{};
         std::unordered_map<std::string, component_definition, std::string_hash, std::equal_to<>>    _components{};
         std::unordered_map<std::string, behavior_definition, std::string_hash, std::equal_to<>>     _behaviors{};
+        int32_t                                                                                     _active_entity{};
 	};
 
 
@@ -81,9 +84,9 @@ namespace box
             return &it->second;
         C::definition = &_components
                              .emplace(std::string(C::type_info.id),
-                                      component_definition{std::string(C::type_info.id),
-                                                           std::string(C::type_info.name),
-                                                           &_registry.storage<C>()})
+                                      component_definition{.id = std::string(C::type_info.id),
+                                                           .name = std::string(C::type_info.name),
+                                                           .storage = &_registry.storage<C>()})
                              .first->second;
         return C::definition;
     }

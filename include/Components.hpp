@@ -5,6 +5,7 @@ namespace box
     struct component
     {
         virtual ~component() = default;
+        virtual void on_edit(entity& ent) {};
 
         template <typename T>
         T* as()
