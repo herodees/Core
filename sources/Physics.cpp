@@ -201,9 +201,34 @@ namespace box
 
     rigid_body::~rigid_body()
     {
-        if (!_body.space)
-            cpSpaceRemoveBody(&s_physics->space(), &_body);
-        cpBodyDestroy(&_body);
+        auto space = _body.space;
+        if (space)
+        {
+            if (get_type() == body_type::STATIC)
+            {
+                cpSpaceRemoveBody(space, &_body);
+                cpSpaceReindexStatic(space);
+            }
+            else
+            {
+                cpSpaceRemoveBody(space, &_body);
+            }
+        }
+    }
+
+    void rigid_body::on_edit(entity& ent)
+    {
+        ImGui::InputFloat2("Position", &_body.p.x);
+        ImGui::InputFloat2("Velocity", &_body.v.x);
+        ImGui::InputFloat2("Force", &_body.f.x);
+
+        ImGui::InputFloat("Mass", &_body.m);
+        ImGui::InputFloat("Inertia", &_body.i);
+        ImGui::InputFloat2("Center of gravity", &_body.cog.x);
+
+        ImGui::InputFloat2("Angle", &_body.a);
+        ImGui::InputFloat2("Angular velocity", &_body.w);
+        ImGui::InputFloat2("Torque", &_body.t);
     }
 
     void rigid_body::activate(bool act)
@@ -395,6 +420,25 @@ namespace box
         }
     }
 
+    void circle_collider::on_edit(entity& ent)
+    {
+        if (ImGui::InputFloat2("Center", &_shape.c.x))
+        {
+            _shape.shape.massInfo.cog = _shape.c;
+        }
+
+        if (ImGui::DragFloat("Radius", &_shape.r))
+        {
+            if (_shape.r < 1.f)
+                _shape.r = 1.0f;
+            _shape.shape.massInfo.i = cpMomentForCircle(1.0f, 0.0f, _shape.r, cpvzero);
+            _shape.shape.massInfo.area = cpAreaForCircle(0.0f, _shape.r);
+        }
+
+        base_collider<circle_collider_component, cpCircleShape>::on_edit(ent);
+
+    }
+
     void segment_collider::setup(Vec2f a, Vec2f b, float r)
     {
         _shape.a.x = a.x;
@@ -414,6 +458,11 @@ namespace box
         {
             cpSpaceAddShape(&s_physics->space(), &_shape.shape);
         }
+    }
+
+    void segment_collider::on_edit(entity& ent)
+    {
+        base_collider<segment_collider_component, cpSegmentShape>::on_edit(ent);
     }
 
     void polygon_collider::setup(const Vec2f* verts, size_t count, float radius)
@@ -456,6 +505,11 @@ namespace box
         {
             cpSpaceAddShape(&s_physics->space(), &_shape.shape);
         }
+    }
+
+    void polygon_collider::on_edit(entity& ent)
+    {
+        base_collider<polygon_collider_component, cpPolyShape>::on_edit(ent);
     }
 
 } // namespace box

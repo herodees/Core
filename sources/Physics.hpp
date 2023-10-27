@@ -52,9 +52,12 @@ namespace box
     struct rigid_body : rigid_body_component
     {
         static const component_definition* definition;
+        static constexpr auto              in_place_delete = true;
 
         rigid_body();
         ~rigid_body() override;
+
+        void      on_edit(entity& ent) override;
 
         void      activate(bool act) override;
         bool      is_active() const override;
@@ -100,6 +103,7 @@ namespace box
     struct base_collider : T
     {
         static const component_definition* definition;
+        static constexpr auto              in_place_delete = true;
 
         base_collider();
         ~base_collider() override;
@@ -126,6 +130,7 @@ namespace box
         void            set_collision_type(uintptr_t collisionType) override;
         collider_filter get_filter() const override;
         void            set_filter(collider_filter filter) override;
+        void            on_edit(entity& ent) override;
 
         SHAPE _shape{};
     };
@@ -133,16 +138,19 @@ namespace box
     struct circle_collider : base_collider<circle_collider_component, cpCircleShape>
     {
         void setup(float radius, Vec2f offset) override;
+        void on_edit(entity& ent) override;
     };
 
     struct segment_collider : base_collider<segment_collider_component, cpSegmentShape>
     {
         void setup(Vec2f a, Vec2f b, float r) override;
+        void on_edit(entity& ent) override;
     };
 
     struct polygon_collider : base_collider<polygon_collider_component, cpPolyShape>
     {
         void setup(const Vec2f* verts, size_t count, float radius) override;
+        void on_edit(entity& ent) override;
     };
 
 
@@ -312,6 +320,28 @@ namespace box
     inline void base_collider<T, SHAPE>::set_filter(collider_filter filter)
     {
         cpShapeSetFilter(&_shape.shape, reinterpret_cast<const cpShapeFilter&>(filter));
+    }
+
+    template <typename T, typename SHAPE>
+    inline void base_collider<T, SHAPE>::on_edit(entity& ent)
+    {
+        cpShape& shape = _shape.shape;
+       
+        if (ImGui::InputFloat("Mass", &shape.massInfo.m))
+            set_mass(shape.massInfo.m);
+
+        float density = get_density();
+        if (ImGui::InputFloat("Density", &density))
+            set_density(density);
+
+        if (ImGui::InputFloat("Elasticity", &_shape.shape.e))
+            set_elasticity(_shape.shape.e);
+
+        if (ImGui::InputFloat("Friction", &shape.u))
+            set_friction(shape.u);
+
+        if (ImGui::InputFloat2("Surface velocity", &_shape.shape.surfaceV.x))
+            cpShapeSetSurfaceVelocity(&_shape.shape, _shape.shape.surfaceV);
     }
 
 

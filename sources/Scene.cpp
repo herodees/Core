@@ -13,6 +13,9 @@ namespace box
 
     scene_impl::~scene_impl()
     {
+        _registry.clear();
+        _systems.clear();
+        _behaviors.clear();
     }
 
     void scene_impl::init()
@@ -366,12 +369,17 @@ namespace box
         {
             if (storage.second.storage->contains(eid))
             {
-                if (ImGui::CollapsingHeader(storage.second.name.c_str()))
+                bool visible = true;
+                if (ImGui::CollapsingHeader(storage.second.name.c_str(), &visible, ImGuiTreeNodeFlags_DefaultOpen))
                 {
 
                     component* cmp = static_cast<component*>(storage.second.storage->get(eid));
                     entity     ent(this, (entity_id)eid);
                     cmp->on_edit(ent);
+                }
+                if (!visible)
+                {
+                    storage.second.storage->remove(eid);
                 }
             }
         }
