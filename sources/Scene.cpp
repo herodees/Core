@@ -310,6 +310,7 @@ namespace box
             it.second->on_imgui(*this);
         }
 
+        show_overlay_imgui();
         show_scene_imgui();
         show_entity_imgui(_active_entity);
     }
@@ -384,6 +385,54 @@ namespace box
             }
         }
 
+        ImGui::NewLine();
+        ImGui::NewLine();
+        ImGui::SameLine((ImGui::GetContentRegionAvail().x - 120) / 2);
+        
+        ImGui::SetNextItemWidth(120);
+        if (ImGui::BeginCombo("##add", "Add component", ImGuiComboFlags_PopupAlignLeft))
+        {
+            if (ImGui::BeginMenu("Components"))
+            {
+                for (auto& el : _components)
+                {
+                    ImGui::MenuItem(el.second.name.c_str(), nullptr, nullptr, !el.second.storage->contains(eid));
+                }
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Behaviors"))
+            {
+                for (auto& el : _behaviors)
+                {
+                    ImGui::MenuItem(el.second.factory->name.data(), nullptr, nullptr, !el.second.storage.contains(eid));
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndCombo();
+        }
+
+
+
         ImGui::End();
     }
+
+    void scene_impl::show_overlay_imgui()
+    {
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking |
+                                        ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings |
+                                        ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav;
+
+        ImGui::SetNextWindowPos({ImGui::GetMainViewport()->GetCenter().x, 32}, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+        ImGui::SetNextWindowBgAlpha(0.95f); // Transparent background
+        if (ImGui::Begin("overlay", nullptr, window_flags))
+        {
+            ImGui::Button(">");
+            ImGui::SameLine();
+            ImGui::Button("||");
+            ImGui::SameLine();
+            ImGui::Button("o");
+        }
+        ImGui::End();
+    }
+
 }

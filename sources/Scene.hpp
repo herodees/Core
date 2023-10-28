@@ -56,6 +56,7 @@ namespace box
         void                        on_imgui();
         void                        show_scene_imgui();
         void                        show_entity_imgui(int32_t index);
+        void                        show_overlay_imgui();
         entt::registry&             get_registry();
 
         template <typename C>

@@ -218,11 +218,30 @@ namespace box
 
     void rigid_body::on_edit(entity& ent)
     {
+        const char* type_names[] = {"Dynamic", "Kinematic", "Static"};
+
+        if (ImGui::BeginCombo("Body type", type_names[(int)get_type()]))
+        {
+            for (auto& label : type_names)
+                if (ImGui::Selectable(label))
+                {
+                    cpSpaceRemoveBody(_body.space, &_body);
+                    set_type((body_type)std::distance(type_names, &label));
+                    cpSpaceAddBody(&s_physics->space(), &_body);
+                }
+            ImGui::EndCombo();
+        }
+        
         ImGui::InputFloat2("Position", &_body.p.x);
         ImGui::InputFloat2("Velocity", &_body.v.x);
         ImGui::InputFloat2("Force", &_body.f.x);
 
-        ImGui::InputFloat("Mass", &_body.m);
+
+        if (ImGui::InputFloat("Mass", &_body.m))
+        {
+            cpBodySetMass(&_body, _body.m);
+        }
+
         ImGui::InputFloat("Inertia", &_body.i);
         ImGui::InputFloat2("Center of gravity", &_body.cog.x);
 
