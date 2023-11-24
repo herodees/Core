@@ -64,6 +64,21 @@ namespace box
         STATIC
     };
 
+    struct transform_component : component
+    {
+        static constexpr component_type_info type_info = {"transform", "Transform"};
+
+        virtual ~transform_component() = default;
+
+        virtual Vec2f get_position() const  = 0;
+        virtual void  set_position(Vec2f v) = 0;
+        virtual float get_rotation() const  = 0;
+        virtual void  set_rotation(float v) = 0;
+        virtual Vec2f get_scale() const     = 0;
+        virtual void  set_scale(Vec2f v)    = 0;
+    };
+
+
     struct rigid_body_component : component
     {
         static constexpr component_type_info type_info = {"rigidbody", "Rigidbody"};
@@ -90,8 +105,6 @@ namespace box
         virtual Vec2f     get_force() const                                       = 0;
         virtual void      set_torque(float torque)                                = 0;
         virtual float     get_torque() const                                      = 0;
-        virtual void      set_data(void* data)                                    = 0;
-        virtual void*     get_data() const                                        = 0;
         virtual void      update_velocity(Vec2f gravity, float damping, float dt) = 0;
         virtual void      update_position(float dt)                               = 0;
         virtual Vec2f     local_to_world(Vec2f pos) const                         = 0;

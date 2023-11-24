@@ -195,6 +195,22 @@ namespace box
     rigid_body::rigid_body()
     {
         cpBodyInit(&_body, 0.f, 0.f);
+        _body.userData      = this;
+        _body.position_func = [](cpBody* body, cpFloat dt)
+        {
+            body->p = cpvadd(body->p, cpvmult(cpvadd(body->v, body->v_bias), dt));
+            auto rot         = cpvforangle(body->a);
+            body->a          = body->a + (body->w + body->w_bias) * dt;
+            body->transform  = cpTransformNewTranspose(rot.x,
+                                                      -rot.y,
+                                                      body->p.x - (body->cog.x * rot.x - body->cog.y * rot.y),
+                                                      rot.y,
+                                                      rot.x,
+                                                      body->p.y - (body->cog.x * rot.y + body->cog.y * rot.x));
+            body->v_bias     = cpvzero;
+            body->w_bias     = 0.0f;
+        };
+
         if (!_body.space)
             cpSpaceAddBody(&s_physics->space(), &_body);
     }
@@ -354,16 +370,6 @@ namespace box
     float rigid_body::get_torque() const
     {
         return _body.t;
-    }
-
-    void rigid_body::set_data(void* data)
-    {
-        _body.userData = data;
-    }
-
-    void* rigid_body::get_data() const
-    {
-        return _body.userData;
     }
 
     void rigid_body::update_velocity(Vec2f gravity, float damping, float dt)
@@ -529,6 +535,38 @@ namespace box
     void polygon_collider::on_edit(entity& ent)
     {
         base_collider<polygon_collider_component, cpPolyShape>::on_edit(ent);
+    }
+
+    Vec2f transform::get_position() const
+    {
+        return _position;
+    }
+
+    void transform::set_position(Vec2f v)
+    {
+        _position = v;
+    }
+
+    float transform::get_rotation() const
+    {
+        return _angle;
+    }
+
+    void transform::set_rotation(float v)
+    {
+        _rotation.x = std::sin(v);
+        _rotation.y = std::cos(v);
+        _angle      = v;
+    }
+
+    Vec2f transform::get_scale() const
+    {
+        return _scale;
+    }
+
+    void transform::set_scale(Vec2f v)
+    {
+        _scale = v;
     }
 
 } // namespace box

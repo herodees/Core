@@ -49,6 +49,25 @@ namespace box
         float   _curent_time{};
     };
 
+    struct transform : transform_component
+    {
+        static const component_definition* definition;
+
+        ~transform() override = default;
+
+        Vec2f get_position() const override;
+        void  set_position(Vec2f v) override;
+        float get_rotation() const override;
+        void  set_rotation(float v) override;
+        Vec2f get_scale() const override;
+        void  set_scale(Vec2f v) override;
+
+        Vec2f _position;
+        Vec2f _scale{1.f,1.f};
+        Vec2f _rotation;
+        float _angle{};
+    };
+
     struct rigid_body : rigid_body_component
     {
         static const component_definition* definition;
@@ -80,8 +99,6 @@ namespace box
         Vec2f get_force() const override;
         void  set_torque(float torque) override;
         float get_torque() const override;
-        void  set_data(void* data) override;
-        void* get_data() const override;
 
         void  update_velocity(Vec2f gravity, float damping, float dt) override;
         void  update_position(float dt) override;
