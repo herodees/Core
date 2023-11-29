@@ -42,9 +42,11 @@ namespace box
         void     reset();
         cpSpace& space();
 
-        void     debug_draw(renderer& rnd);
+        void debug_draw(renderer& rnd);
 
     private:
+        void space_step(cpSpace* space, cpFloat dt);
+
         cpSpace _space{};
         float   _curent_time{};
     };
@@ -61,11 +63,16 @@ namespace box
         void  set_rotation(float v) override;
         Vec2f get_scale() const override;
         void  set_scale(Vec2f v) override;
+        rigid_body* get_body() const;
+        void        set_body(rigid_body* b);
+
+        void  on_edit(entity& ent) override;
 
         Vec2f _position;
         Vec2f _scale{1.f,1.f};
         Vec2f _rotation;
         float _angle{};
+        rigid_body* _body{};
     };
 
     struct rigid_body : rigid_body_component
@@ -99,6 +106,8 @@ namespace box
         Vec2f get_force() const override;
         void  set_torque(float torque) override;
         float get_torque() const override;
+        transform* get_transform() const;
+        void       set_transform(transform* tr);
 
         void  update_velocity(Vec2f gravity, float damping, float dt) override;
         void  update_position(float dt) override;

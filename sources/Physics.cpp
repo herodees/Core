@@ -4,6 +4,7 @@
 namespace box
 {
     const component_definition* rigid_body::definition = nullptr;
+    const component_definition* transform::definition = nullptr;
 
     static physics_impl* s_physics = nullptr;
 
@@ -29,15 +30,17 @@ namespace box
     void physics_impl::init(scene& scn)
     {
         scene_impl& scene = static_cast<scene_impl&>(scn);
-
+        scene.register_component<transform>();
         scene.register_component<rigid_body>();
         scene.register_component<circle_collider>();
         scene.register_component<segment_collider>();
-     //   scene.get_registry().on_construct<segment_collider>().connect<&entt::registry::emplace_or_replace<rigid_body>>();
         scene.register_component<polygon_collider>();
-     //   scene.get_registry().on_construct<polygon_collider>().connect<&entt::registry::emplace_or_replace<rigid_body>>();
     }
 
+    void physics_impl::space_step(cpSpace* space, cpFloat dt)
+    {
+        cpSpaceStep(space, dt);
+    }
 
     void physics_impl::activate()
     {
@@ -141,7 +144,7 @@ namespace box
         _curent_time += delta;
         while (_curent_time >= step_time)
         {
-            cpSpaceStep(&_space, step_time);
+            space_step(&_space, step_time);
             _curent_time -= step_time;
         }
     }
@@ -195,17 +198,25 @@ namespace box
     rigid_body::rigid_body()
     {
         cpBodyInit(&_body, 0.f, 0.f);
-        _body.userData      = this;
+
+        transform* tr = static_cast<transform*>(
+            transform::definition->storage->get(static_cast<scene_impl*>(s_physics->_scene)->current_entity()));
+        _body.userData      = tr;
+        tr->_body           = this;
         _body.position_func = [](cpBody* body, cpFloat dt)
         {
-            body->p = cpvadd(body->p, cpvmult(cpvadd(body->v, body->v_bias), dt));
-            auto rot         = cpvforangle(body->a);
+            transform* tr    = static_cast<transform*>(body->userData);
+            body->p          = cpvadd({tr->_position.x, tr->_position.y}, cpvmult(cpvadd(body->v, body->v_bias), dt));
+            tr->_position.x  = body->p.x;
+            tr->_position.y  = body->p.y;
+            auto rot         = cpvforangle(tr->_angle);
+            tr->_rotation.x  = rot.x;
+            tr->_rotation.y  = rot.y;
             body->a          = body->a + (body->w + body->w_bias) * dt;
-            body->transform  = cpTransformNewTranspose(rot.x,
-                                                      -rot.y,
+            tr->_angle       = body->a; 
+            body->transform  = cpTransformNewTranspose(rot.x, -rot.y,
                                                       body->p.x - (body->cog.x * rot.x - body->cog.y * rot.y),
-                                                      rot.y,
-                                                      rot.x,
+                                                      rot.y, rot.x,
                                                       body->p.y - (body->cog.x * rot.y + body->cog.y * rot.x));
             body->v_bias     = cpvzero;
             body->w_bias     = 0.0f;
@@ -217,6 +228,7 @@ namespace box
 
     rigid_body::~rigid_body()
     {
+        get_transform()->_body = nullptr;
         auto space = _body.space;
         if (space)
         {
@@ -231,6 +243,8 @@ namespace box
             }
         }
     }
+
+
 
     void rigid_body::on_edit(entity& ent)
     {
@@ -248,7 +262,7 @@ namespace box
             ImGui::EndCombo();
         }
         
-        ImGui::InputFloat2("Position", &_body.p.x);
+
         ImGui::InputFloat2("Velocity", &_body.v.x);
         ImGui::InputFloat2("Force", &_body.f.x);
 
@@ -261,7 +275,6 @@ namespace box
         ImGui::InputFloat("Inertia", &_body.i);
         ImGui::InputFloat2("Center of gravity", &_body.cog.x);
 
-        ImGui::InputFloat2("Angle", &_body.a);
         ImGui::InputFloat2("Angular velocity", &_body.w);
         ImGui::InputFloat2("Torque", &_body.t);
     }
@@ -295,6 +308,8 @@ namespace box
     void rigid_body::set_position(Vec2f position)
     {
         cpBodySetPosition(&_body, reinterpret_cast<cpVect&>(position));
+        transform* tr = static_cast<transform*>(_body.userData);
+        tr->_position = _body.p;
     }
 
     Vec2f rigid_body::get_position() const
@@ -370,6 +385,16 @@ namespace box
     float rigid_body::get_torque() const
     {
         return _body.t;
+    }
+
+    transform* rigid_body::get_transform() const
+    {
+        return static_cast<transform*>(_body.userData);
+    }
+
+    void rigid_body::set_transform(transform* tr)
+    {
+        _body.userData = tr;
     }
 
     void rigid_body::update_velocity(Vec2f gravity, float damping, float dt)
@@ -545,6 +570,10 @@ namespace box
     void transform::set_position(Vec2f v)
     {
         _position = v;
+        if (_body)
+        {
+            cpBodySetPosition(&_body->_body, reinterpret_cast<cpVect&>(v));
+        }
     }
 
     float transform::get_rotation() const
@@ -554,9 +583,13 @@ namespace box
 
     void transform::set_rotation(float v)
     {
-        _rotation.x = std::sin(v);
-        _rotation.y = std::cos(v);
+        _rotation.x = std::cos(v);
+        _rotation.y = std::sin(v);
         _angle      = v;
+        if (_body)
+        {
+            cpBodySetAngle(&_body->_body, v);
+        }
     }
 
     Vec2f transform::get_scale() const
@@ -567,6 +600,31 @@ namespace box
     void transform::set_scale(Vec2f v)
     {
         _scale = v;
+    }
+
+    rigid_body* transform::get_body() const
+    {
+        return _body;
+    }
+
+    void transform::set_body(rigid_body* b)
+    {
+        _body = b;
+    }
+
+    void transform::on_edit(entity& ent)
+    {
+        if (ImGui::InputFloat2("Position", &_position.x))
+        {
+            set_position(_position);
+        }
+        if (ImGui::InputFloat2("Scale", &_scale.x))
+        {
+        }
+        if (ImGui::InputFloat("Rotation", &_angle))
+        {
+            set_rotation(_angle);
+        }
     }
 
 } // namespace box

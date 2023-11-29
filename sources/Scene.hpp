@@ -63,6 +63,7 @@ namespace box
         const component_definition* register_component();
         template <typename S>
         const system* register_system();
+        entt::entity  current_entity() const;
 
     private:
         game&                                                                                       _game;
@@ -72,6 +73,7 @@ namespace box
         std::unordered_map<std::string, component_definition, std::string_hash, std::equal_to<>>    _components{};
         std::unordered_map<std::string, behavior_definition, std::string_hash, std::equal_to<>>     _behaviors{};
         int32_t                                                                                     _active_entity{};
+        entt::entity                                                                                _current_entity;
 	};
 
 
@@ -99,6 +101,7 @@ namespace box
         if (it != _systems.end())
             return it->second.get();
         auto* sys = _systems.emplace(std::string(S::type_info.id), new S()).first->second.get();
+        sys->_scene = this;
         return sys;
     }
 

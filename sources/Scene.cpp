@@ -73,8 +73,9 @@ namespace box
 
     entity scene_impl::create()
     {
-        auto ent = _registry.create();
-        return entity(this, (entity_id)ent);
+        _current_entity = _registry.create();
+        transform::definition->storage->emplace(_current_entity);
+        return entity(this, (entity_id)_current_entity);
     }
 
     void scene_impl::release(entity_id id)
@@ -106,6 +107,7 @@ namespace box
     {
         if (auto* cmp = find_component_definition(cmp_id))
         {
+            _current_entity = (entt::entity)id;
             cmp->storage->emplace((entt::entity)id);
             return static_cast<component*>(cmp->storage->get((entt::entity)id));
         }
@@ -174,6 +176,7 @@ namespace box
         auto it = _behaviors.find(beh_id);
         if (it == _behaviors.end())
             return;
+        _current_entity = (entt::entity)id;
         it->second.storage.emplace((entt::entity)id);
     }
 
@@ -352,6 +355,11 @@ namespace box
         ImGui::EndChildFrame();
 
         ImGui::End();
+    }
+
+    entt::entity scene_impl::current_entity() const
+    {
+        return _current_entity;
     }
 
     void scene_impl::show_entity_imgui(int32_t index)
