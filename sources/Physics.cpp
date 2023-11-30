@@ -329,7 +329,7 @@ namespace box
 
     void rigid_body::set_moment(float moment)
     {
-        cpBodySetMoment(&_body, moment);
+        cpBodySetMoment(&_body, moment < 0.0f ? 0.0f : moment);
     }
 
     float rigid_body::get_moment() const

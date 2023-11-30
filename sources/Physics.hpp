@@ -213,7 +213,6 @@ namespace box
     inline void base_collider<T, SHAPE>::set_body(rigid_body_component* body)
     {
         cpShapeSetBody(&_shape.shape, &static_cast<rigid_body*>(body)->_body);
-        cpBodyAddShape(&static_cast<rigid_body*>(body)->_body, &_shape.shape);
     }
 
     template <typename T, typename SHAPE>
@@ -225,7 +224,7 @@ namespace box
     template <typename T, typename SHAPE>
     inline void base_collider<T, SHAPE>::set_mass(float mass)
     {
-        cpShapeSetMass(&_shape.shape, mass);
+        cpShapeSetMass(&_shape.shape, mass > 0.f ? mass : 0.001f);
     }
 
     template <typename T, typename SHAPE>
@@ -237,7 +236,7 @@ namespace box
     template <typename T, typename SHAPE>
     inline void base_collider<T, SHAPE>::set_density(float density)
     {
-        cpShapeSetDensity(&_shape.shape, density);
+        cpShapeSetDensity(&_shape.shape, density > 0.f ? density : 0.001f);
     }
 
     template <typename T, typename SHAPE>
@@ -353,20 +352,20 @@ namespace box
     {
         cpShape& shape = _shape.shape;
        
-        if (ImGui::InputFloat("Mass", &shape.massInfo.m))
+        if (ImGui::InputFloat("Mass", &shape.massInfo.m, 0, 0, "%.5f"))
             set_mass(shape.massInfo.m);
 
         float density = get_density();
-        if (ImGui::InputFloat("Density", &density))
+        if (ImGui::InputFloat("Density", &density, 0, 0, "%.5f"))
             set_density(density);
 
-        if (ImGui::InputFloat("Elasticity", &_shape.shape.e))
+        if (ImGui::InputFloat("Elasticity", &_shape.shape.e, 0, 0, "%.5f"))
             set_elasticity(_shape.shape.e);
 
-        if (ImGui::InputFloat("Friction", &shape.u))
+        if (ImGui::InputFloat("Friction", &shape.u, 0, 0, "%.5f"))
             set_friction(shape.u);
 
-        if (ImGui::InputFloat2("Surface velocity", &_shape.shape.surfaceV.x))
+        if (ImGui::InputFloat2("Surface velocity", &_shape.shape.surfaceV.x, "%.5f"))
             cpShapeSetSurfaceVelocity(&_shape.shape, _shape.shape.surfaceV);
     }
 

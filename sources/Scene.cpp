@@ -49,6 +49,7 @@ namespace box
             collider->setup(r, {0, 0});
             collider->set_elasticity(0.699);
             collider->set_friction(1.f);
+            collider->set_mass(0.01f);
           
         };
         item_create(461, 50, 20, 10, false);
