@@ -312,18 +312,6 @@ namespace box
     }
 
     template <typename T, typename SHAPE>
-    inline void* base_collider<T, SHAPE>::get_user_data() const
-    {
-        return _shape.shape.userData;
-    }
-
-    template <typename T, typename SHAPE>
-    inline void base_collider<T, SHAPE>::set_user_data(void* userData)
-    {
-        cpShapeSetUserData(&_shape.shape, userData);
-    }
-
-    template <typename T, typename SHAPE>
     inline uintptr_t base_collider<T, SHAPE>::get_collision_type() const
     {
         return _shape.shape.type;

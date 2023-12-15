@@ -178,11 +178,6 @@ namespace box
         /// Set the surface velocity of this shape.
         virtual void set_surface_velocity(Vec2f surfaceVelocity) = 0;
 
-        /// Get the user definable data pointer of this shape.
-        virtual void* get_user_data() const = 0;
-        /// Set the user definable data pointer of this shape.
-        virtual void set_user_data(void* userData) = 0;
-
         /// Set the collision type of this shape.
         virtual uintptr_t get_collision_type() const = 0;
         /// Get the collision type of this shape.
