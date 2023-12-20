@@ -148,10 +148,11 @@ namespace box
 		std::vector<vertex>  _verts;
 		std::vector<command> _commands;
 		command _command{};
-		bool _depthsort{};
+
 		camera _camera{};
 		const render_texture* _target{};
 		material_impl _default;
+        bool                  _depthsort{};
 	};
 
 }

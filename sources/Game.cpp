@@ -89,6 +89,7 @@ namespace box
     {
         get_plugin().on_imgui(*this);
         _scene.on_imgui();
+        _assets.on_imgui();
     }
 
     void game_impl::on_update()

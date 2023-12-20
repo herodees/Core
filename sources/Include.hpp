@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <execution>
+#include <string>
 #include <memory_resource>
 
 #pragma warning(push)

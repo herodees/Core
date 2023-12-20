@@ -150,8 +150,6 @@ namespace box
         void            set_friction(float friction) override;
         Vec2f           get_surface_velocity() const override;
         void            set_surface_velocity(Vec2f surfaceVelocity) override;
-        void*           get_user_data() const override;
-        void            set_user_data(void* userData) override;
         uintptr_t       get_collision_type() const override;
         void            set_collision_type(uintptr_t collisionType) override;
         collider_filter get_filter() const override;
