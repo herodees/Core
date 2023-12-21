@@ -18,16 +18,16 @@ namespace box
 
         void setup(const char* v[], int32_t c);
 
-        int32_t            run();
-        void               init();
-        renderer&          get_renderer() override;
-        asset_provider&    get_asset() override;
-        scene&             get_scene() override;
-        physics&           get_physics() override;
-        inputs&            get_inputs() override;
-        video&             get_video() override;
-        plugin&            get_plugin() override;
-        imgui&             get_imgui() override;
+        int32_t         run();
+        void            init();
+        renderer&       get_renderer() override;
+        asset_provider& get_asset() override;
+        scene&          get_scene() override;
+        physics&        get_physics() override;
+        inputs&         get_inputs() override;
+        video&          get_video() override;
+        plugin&         get_plugin() override;
+        imgui&          get_imgui() override;
 
     private:
         void on_frame_begin();

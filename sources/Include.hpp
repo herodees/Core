@@ -9,6 +9,8 @@
 #include <execution>
 #include <string>
 #include <memory_resource>
+#include <algorithm>
+#include <filesystem>
 
 #pragma warning(push)
 #pragma warning(disable : 4820)

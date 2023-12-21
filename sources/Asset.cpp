@@ -1,5 +1,6 @@
 #include "Asset.hpp"
 #include "Renderer.hpp"
+#include "Plugin.hpp"
 
 namespace box
 {
@@ -64,8 +65,26 @@ namespace box
 
         if(ImGui::Button(" + Add "))
         {
+            auto files = open_file_dialog("", true);
+            if (files.size())
+            {
+                for (auto pth: files)
+                {
+                    std::filesystem::path path(pth);
+                    if (path.has_filename())
+                    {
+                        node n;
+                        n._name = (const char*)path.filename().u8string().c_str();
+                        active_node()->_items.emplace(n);
+                    }
+                }
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button(" + Dir "))
+        {
             node n;
-            n._name = std::to_string(active_node()->_items.size());
+            n._name = std::to_string(rand());
             active_node()->_items.emplace(n);
         }
         ImGui::SameLine();
@@ -121,12 +140,22 @@ namespace box
             {
                 if(ImGui::Button(el._name.c_str(), button_sz))
                 {
-                    if (!el._data)
-                    {
-                        _active.emplace_back(const_cast<node*>(&el));
-                    }
+                    select_node(&el);
                 }
-                float next_button_x2 = ImGui::GetItemRectMax().x + style.ItemSpacing.x + button_sz.x;
+                if (ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered())
+                {
+                    activate_node(&el);
+                }
+                ImVec2 rcmin = ImGui::GetItemRectMin();
+                ImVec2 rcmax = ImGui::GetItemRectMax();
+                if (_selected == &el)
+                {
+                    ImGui::GetWindowDrawList()->AddRect(rcmin,
+                                                        rcmax,
+                                                        ImGui::ColorConvertFloat4ToU32(style.Colors[ImGuiCol_DockingPreview]),
+                                                        style.FrameRounding,0,2);
+                }
+                float next_button_x2 = rcmax.x + style.ItemSpacing.x + button_sz.x;
                 if (next_button_x2 < window_visible_x2)
                     ImGui::SameLine();
             }
@@ -141,6 +170,19 @@ namespace box
 
     void asset_provider_impl::delete_node(node* target)
     {
+        if (!target || target == &_root)
+            return;
+        
+        // Check active folder first
+        auto* active = active_node();
+        auto it = active->_items.find(*target);
+        if (it != active->_items.end())
+        {
+            active->_items.erase(it);
+            return;
+        }
+
+        // Search whole tree
         std::vector<node*> stack;
         stack.push_back(&_root);
 
@@ -160,6 +202,35 @@ namespace box
                 }
             }
         }
+    }
+
+    void asset_provider_impl::select_node(const node* n)
+    {
+        _selected = const_cast<node*>(n);
+    }
+
+    void asset_provider_impl::activate_node(const node* n)
+    {
+        if (!n)
+            return;
+        if (!n->_data)
+        {
+            _active.emplace_back(const_cast<node*>(n));
+            _selected = nullptr;
+        }
+    }
+
+    std::string asset_provider_impl::generate_unique_name(const node* n, std::string_view name) const
+    {
+        node        nde;
+        nde._name = name;
+        int i     = 0;
+        while (n->_items.find(nde) != n->_items.end())
+        {
+            nde._name = name;
+            nde._name += std::to_string(++i);
+        }
+        return std::move(nde._name);
     }
 
     bool asset_provider_impl::asset_data::operator<(const asset_data& d) const
