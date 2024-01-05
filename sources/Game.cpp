@@ -1,4 +1,5 @@
 #include "Game.hpp"
+#include "Editor.hpp"
 
 #if defined(PLATFORM_WEB)
 #include <emscripten/emscripten.h>
@@ -87,9 +88,41 @@ namespace box
 
     void game_impl::on_imgui()
     {
-        get_plugin().on_imgui(*this);
-        _scene.on_imgui();
-        _assets.on_imgui();
+        if (_assets.path().empty())
+        {
+            ImGui::SetNextWindowPos(ImVec2(500, 200), ImGuiCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(950, 500), ImGuiCond_FirstUseEver);
+            if (ImGui::Begin("Project"))
+            {
+                ImGui::Dummy({255, 100});
+                ImGui::Dummy({255, 100});
+                ImGui::SameLine();
+                if (ImGui::Button("Open project", {200,64}))
+                {
+                    auto file = open_file_dialog("main.core", false, "Core Project|*.core");
+                    if (!file.empty())
+                    {
+                        _assets.load(file.back().c_str());
+                    }
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("New project", {200, 64}))
+                {
+                    auto file = save_file_dialog("main.core", "Core Project|*.core");
+                    if (!file.empty())
+                    {
+                        _assets.load(file.c_str());
+                    }
+                }
+            }
+            ImGui::End();
+        }
+        else
+        {
+            get_plugin().on_imgui(*this);
+            _scene.on_imgui();
+            _assets.on_imgui();
+        }
     }
 
     void game_impl::on_update()
@@ -143,12 +176,12 @@ namespace box
     void game_impl::init( )
     {
 		if (_argc == 2)
-		{
-            _game_plugin.load(_argv[2]);
+        {
+            _assets.load(_argv[1]);
 		}
 		else
 		{
-            _game_plugin.load("data/game");
+     //       _assets.load("data/main.core");
 		}
 
 		if (_game_plugin.get())

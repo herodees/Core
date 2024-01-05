@@ -11,6 +11,7 @@
 #include <memory_resource>
 #include <algorithm>
 #include <filesystem>
+#include <inttypes.h>
 
 #pragma warning(push)
 #pragma warning(disable : 4820)

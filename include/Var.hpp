@@ -153,6 +153,9 @@ namespace box
         var(bool v) : _tag(tag::Bool), _bool(v)
         {
         }
+        var(const char* v) : var(std::string_view(v))
+        {
+        }
         var(std::string_view v) : var()
         {
             (v.size() < sizeof(_u64)) ? setid(v) : setstr(v);

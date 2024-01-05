@@ -35,6 +35,4 @@ namespace box
         plugin*     _plugin{};
     };
 
-    std::vector<std::string> open_file_dialog(std::string_view file, bool multiselect, std::string_view filter = "All|*.*|Text|*.TXT");
-    std::string save_file_dialog(std::string_view file, std::string_view filter = "All|*.*|Text|*.TXT");
 } // namespace box

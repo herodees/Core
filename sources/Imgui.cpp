@@ -38,7 +38,7 @@ namespace box
         return ImGui::InputFloat(label, &value, step, step_fast);
     }
 
-    bool imgui_impl::input_text(const char* label, string_buffer& string)
+    bool imgui_impl::input_text(const char* label, imgui_buffer& string)
     {
         return ImGui::InputText(label, 0, 0);
     }
@@ -75,6 +75,10 @@ namespace box
 
     void imgui_impl::show_dialog(imgui_dialog* dialog)
     {
+        if (!dialog || !dialog->_title)
+            return;
+        _open_dialog = dialog;
+        _dialogs.push_back(dialog);
     }
 
     bool imgui_impl::is_active() const
@@ -193,10 +197,62 @@ namespace box
 
     void imgui_impl::on_frame_end()
     {
-        ImGui::ShowDemoWindow();
+        if (_open_dialog)
+            ImGui::OpenPopup(_open_dialog->_title);
+        _open_dialog = nullptr;
 
+        for (auto* el : _dialogs)
+        {
+            bool open = true;
+            if (ImGui::BeginPopupModal(_open_dialog->_title, &open))
+            {
+                el->show();
+                if (el->_closed)
+                    ImGui::CloseCurrentPopup();
+
+                ImGui::EndPopup();
+            }
+        }
         ray::rlImGuiEnd();
     }
 
+    string_dialog::string_dialog(std::string_view title)
+    {
+        _title_str = title;
+        _title     = _title_str.c_str();
+    }
+
+    void string_dialog::show()
+    {
+        ImGui::InputText("Value", _value.data(), _value.capacity() + 1, ImGuiInputTextFlags_CallbackResize, &text_callback, this);
+
+        if(ImGui::Button("Cancel"))
+        {
+            _closed = true;
+        }
+        ImGui::SameLine();
+        if(ImGui::Button("Apply"))
+        {
+            _closed = validate(_value);
+        }
+    }
+
+    int string_dialog::text_callback(ImGuiInputTextCallbackData* data)
+    {
+        string_dialog* user_data = (string_dialog*)data->UserData;
+        if (data->EventFlag == ImGuiInputTextFlags_CallbackResize)
+        {
+            std::string* str = &user_data->_value;
+            IM_ASSERT(data->Buf == str->c_str());
+            str->resize(data->BufTextLen);
+            data->Buf = str->data();
+        }
+        return 0;
+    }
+
+    bool string_dialog::validate(std::string_view value)
+    {
+        return !value.empty();
+    }
 
 } // namespace box
