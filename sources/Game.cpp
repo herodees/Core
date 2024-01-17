@@ -111,7 +111,7 @@ namespace box
                     auto file = save_file_dialog("main.core", "Core Project|*.core");
                     if (!file.empty())
                     {
-                        _assets.load(file.c_str());
+                        _assets.save(file.c_str());
                     }
                 }
             }

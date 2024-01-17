@@ -44,16 +44,4 @@ namespace box
         virtual void on_imgui(game& gme){};
     };
 
-
-    class asset_provider
-    {
-    public:
-        virtual ~asset_provider() = default;
-
-        virtual asset_ref<texture>   load_texture(const char* path)   = 0;
-        virtual asset_ref<material>  load_material(const char* path)  = 0;
-        virtual asset_ref<sound>     load_sound(const char* path)     = 0;
-        virtual asset_ref<prototype> load_prototype(const char* path) = 0;
-    };
-
 } // namespace box

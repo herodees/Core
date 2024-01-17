@@ -31,8 +31,8 @@ namespace box
         ~asset_provider_impl() override;
 
         std::string_view path() const;
-        bool load(const char* path);
-        bool save();
+        bool             load(const char* path);
+        bool             save(const char* path = nullptr);
 
         void init(renderer* renderer);
 
@@ -58,6 +58,9 @@ namespace box
         bool        load_filter(node* n, var& ar);
         bool        save_filter(const node* n, var& ar);
         void        get_unique_name(const asset_data& ad, std::string& out, bool full) const;
+        void        add_texture(node* n);
+        void        add_sprite(node* n);
+        bool add_asset(node* n, std::string_view filename, std::string_view ext, const void* data, size_t size);
 
         renderer*                         _renderer{};
         node                              _root;

@@ -15,8 +15,19 @@ namespace box
 
         bool validate(std::string_view value) override
         {
-        
+            if (value.empty() || value == _target->_name)
+                return false;
+
+            if (!_target->_parent)
+                return true;
+
+            node nde;
+            nde._name = value;
+            auto it = _target->_parent->_items.find(nde);
+            return it == _target->_parent->_items.end();
         }
+
+        asset_provider_impl::node* _target{};
     };
 
 
@@ -69,8 +80,11 @@ namespace box
         return load_filter(&_root, filter);
     }
 
-    bool asset_provider_impl::save()
+    bool asset_provider_impl::save(const char* path)
     {
+        if (path)
+            _path = path;
+
         var assets;
         assets.make_array(uint32_t(_nodes.size()));
         for (auto& n : _nodes)
@@ -141,6 +155,28 @@ namespace box
             return;
         }
 
+        if (ImGui::BeginCombo("##dd", " + Add ", ImGuiComboFlags_NoArrowButton | ImGuiComboFlags_WidthFitPreview))
+        {
+            if (ImGui::MenuItem("Folder",nullptr,nullptr,true))
+            {
+                node n;
+                n._name = std::to_string(generate_uuid());
+                n._parent = active_node();
+                active_node()->_items.emplace(n);
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Texture", nullptr, nullptr, true))
+            {
+                add_texture(active_node());
+            }
+            if (ImGui::MenuItem("Sprite", nullptr, nullptr, true))
+            {
+                add_sprite(active_node());
+            }
+
+            ImGui::EndCombo();
+        }
+        ImGui::SameLine();
         if(ImGui::Button(" + Add "))
         {
             auto files = open_file_dialog("", true);
@@ -158,6 +194,7 @@ namespace box
                         data._uuid = generate_uuid();
                         std::copy(ext.begin(), ext.begin() + std::min(ext.size(), std::size(data._type)), data._type);
                         n._name = name;
+                        n._parent = active_node();
 
                         int32_t size{};
                         if (auto fd = ray::LoadFileData(pth.c_str(), &size))
@@ -175,13 +212,6 @@ namespace box
                     }
                 }
             }
-        }
-        ImGui::SameLine();
-        if (ImGui::Button(" + Dir "))
-        {
-            node n;
-            n._name = std::to_string(generate_uuid());
-            active_node()->_items.emplace(n);
         }
         ImGui::SameLine();
         if (ImGui::Button(" - Del "))
@@ -290,37 +320,13 @@ namespace box
 
     void asset_provider_impl::delete_node(node* target)
     {
-        if (!target || target == &_root)
+        if (!target || target == &_root || !target->_parent)
             return;
-        
-        // Check active folder first
-        auto* active = active_node();
-        auto it = active->_items.find(*target);
-        if (it != active->_items.end())
-        {
-            active->_items.erase(it);
-            return;
-        }
 
-        // Search whole tree
-        std::vector<node*> stack;
-        stack.push_back(&_root);
-
-        for (size_t n = 0; n < stack.size(); ++n)
+        auto it = target->_parent->_items.find(*target);
+        if (it != target->_parent->_items.end())
         {
-            auto it = stack[n]->_items.find(*target);
-            if (it != stack[n]->_items.end())
-            {
-                stack[n]->_items.erase(it);
-                return;
-            }
-            if (!stack[n]->_data)
-            {
-                for (auto& it : stack[n]->_items)
-                {
-                    stack.push_back(const_cast<node*>(&it));
-                }
-            }
+            target->_parent->_items.erase(it);
         }
     }
 
@@ -377,6 +383,7 @@ namespace box
         for (auto& el : itms.elements())
         {
             node nde;
+            nde._parent = n;
             load_filter(&nde, el);
             n->_items.insert(nde);
         }
@@ -415,6 +422,65 @@ namespace box
         else
             out.clear();
         out.append(filename);
+    }
+
+    void asset_provider_impl::add_texture(node* root)
+    {
+        auto files = open_file_dialog("", true, "Image|*.png;*.jpg;*.gif");
+        if (files.size())
+        {
+            std::string fullpath;
+            for (auto pth : files)
+            {
+                std::string_view name = ray::GetFileName(pth.c_str());
+                if (!name.empty())
+                {
+                    std::string_view ext = ray::GetFileExtension(name.data());
+                    int32_t          size{};
+                    if (auto fd = ray::LoadFileData(pth.c_str(), &size))
+                    {
+                        add_asset(root, name, ext, fd, size);
+                        ray::MemFree(fd);
+                    }
+                }
+            }
+        }
+    }
+
+    void asset_provider_impl::add_sprite(node* n)
+    {
+
+        auto file = save_file_dialog("", "Sprite|*.sprite");
+        if (file.size())
+        {
+        }
+    }
+
+    bool asset_provider_impl::add_asset(
+        node*            root,
+        std::string_view filename,
+        std::string_view ext, const void* data, size_t size)
+    {
+        if (!data || !size)
+            return false;
+
+        asset_data adata;
+        node       n;
+        adata._uuid = generate_uuid();
+        std::copy(ext.begin(), ext.begin() + std::min(ext.size(), std::size(adata._type)), adata._type);
+        n._name = filename;
+        n._parent = root;
+
+        std::string fullpath;
+        get_unique_name(adata, fullpath, true);
+
+        if (ray::SaveFileData(fullpath.c_str(), (void*)data, (int32_t)size))
+        {
+            n._data = const_cast<asset_data*>(&(*_nodes.emplace(adata).first));
+            root->_items.emplace(n);
+            return true;
+        }
+        return false;
     }
 
     bool asset_provider_impl::node::operator<(const node& d) const
