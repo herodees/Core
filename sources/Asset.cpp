@@ -8,26 +8,28 @@ namespace box
 {
     struct asset_provider_impl::rename_node_dialog : string_dialog
     {
-        rename_node_dialog()
+        rename_node_dialog(std::string_view value, asset_provider_impl::node* parent)
         {
-        
+            _old = value;
+            string_dialog::_value = value;
         }
 
         bool validate(std::string_view value) override
         {
-            if (value.empty() || value == _target->_name)
+            if (value.empty() || value == _old)
                 return false;
 
-            if (!_target->_parent)
+            if (!_parent)
                 return true;
 
             node nde;
             nde._name = value;
-            auto it = _target->_parent->_items.find(nde);
-            return it == _target->_parent->_items.end();
+            auto it = _parent->_items.find(nde);
+            return it == _parent->_items.end();
         }
 
-        asset_provider_impl::node* _target{};
+        std::string                _old;
+        asset_provider_impl::node* _parent{};
     };
 
 
@@ -40,7 +42,7 @@ namespace box
         return ret;
     }
 
-	asset_provider_impl::asset_provider_impl()
+	asset_provider_impl::asset_provider_impl(game& gme) : _game(gme)
     {
         _root._name = "game:";
         _active.emplace_back(&_root);
@@ -449,9 +451,12 @@ namespace box
 
     void asset_provider_impl::add_sprite(node* n)
     {
+        
+        _game.get_imgui().show_dialog(new rename_node_dialog("Sprite", active_node()));
 
-        auto file = save_file_dialog("", "Sprite|*.sprite");
-        if (file.size())
+
+   //     auto file = save_file_dialog("", "Sprite|*.sprite");
+     //   if (file.size())
         {
         }
     }

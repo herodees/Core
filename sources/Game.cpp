@@ -18,7 +18,7 @@ namespace box
         ~null_pugin() override = default;
     } null_p;
 
-	game_impl::game_impl() : _plugin(&null_p), _scene(*this)
+	game_impl::game_impl() : _plugin(&null_p), _assets(*this), _scene(*this), _imgui(*this)
     {
 	}
 

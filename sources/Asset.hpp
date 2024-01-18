@@ -27,7 +27,7 @@ namespace box
             bool           operator<(const node& d) const;
         };
 
-        asset_provider_impl();
+        asset_provider_impl(game& gme);
         ~asset_provider_impl() override;
 
         std::string_view path() const;
@@ -68,6 +68,7 @@ namespace box
         std::vector<node*>                _active;
         std::string                       _path;
         node*                             _selected{};
+        game&                             _game;
     };
 
     

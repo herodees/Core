@@ -20,7 +20,7 @@ namespace box
     class imgui_impl final : public imgui
     {
     public:
-        imgui_impl();
+        imgui_impl(game& gme);
         ~imgui_impl() override;
 
         void same_line();
@@ -34,7 +34,7 @@ namespace box
         bool begin_frame(const char* label, Vec2f size = {0, 0});
         void end_frame();
         bool collapsing_header(const char* label, bool* opened = nullptr);
-        void show_dialog(imgui_dialog* dialog);
+        void show_dialog(imgui_dialog* dialog) override;
 
     public:
         bool is_active() const override;
@@ -47,6 +47,7 @@ namespace box
 
         imgui_dialog*              _open_dialog{};
         std::vector<imgui_dialog*> _dialogs;
-        bool _active{true};
+        bool                       _active{true};
+        game&                      _game;
     };
 } // namespace box

@@ -10,7 +10,7 @@ namespace ray
 
 namespace box
 {
-    imgui_impl::imgui_impl()
+    imgui_impl::imgui_impl(game& gme) : _game(gme)
     {
     }
 
@@ -204,7 +204,7 @@ namespace box
         for (auto* el : _dialogs)
         {
             bool open = true;
-            if (ImGui::BeginPopupModal(_open_dialog->_title, &open))
+            if (ImGui::BeginPopupModal(el->_title, &open))
             {
                 el->show();
                 if (el->_closed)
