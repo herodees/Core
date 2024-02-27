@@ -1,0 +1,8 @@
+- name: Checkout the repository
+  uses: actions/checkout@v3
+- name: Run premake '5.0.0-beta1'
+  uses: eariassoto/setup-premake@v1
+  with:
+    version: '5.0.0-beta1'
+    action: 'gmake'
+    options: '--cc=clang'
